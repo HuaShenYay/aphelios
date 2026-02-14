@@ -49,8 +49,8 @@ export function Sidebar({ onOpenSettings, activeTab, onTabChange }: SidebarProps
               key={item.id}
               onClick={() => onTabChange(item.id)}
               className={`flex items-center gap-3 px-4 py-3 rounded-(--field-radius) cursor-pointer transition-all duration-200 text-sm font-medium ${
-                activeTab === item.id 
-                  ? 'bg-white shadow-sm text-(--novel-text-main)' 
+                activeTab === item.id
+                  ? 'bg-(--surface) shadow-sm text-(--novel-text-main)'
                   : 'text-(--novel-text-muted) hover:text-(--novel-text-main) hover:bg-black/5'
               }`}
             >
@@ -67,12 +67,9 @@ export function Sidebar({ onOpenSettings, activeTab, onTabChange }: SidebarProps
       
       {/* User Profile Section */}
       <div className="p-4 mx-4 mb-4">
-        <div 
+        <div
           onClick={onOpenSettings}
           className="flex items-center gap-3 p-3 rounded-(--radius) cursor-pointer transition-all duration-200 glass-card"
-          style={{ 
-            background: 'rgba(250, 249, 246, 0.6)',
-          }}
         >
           <div 
             className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center shadow-sm"

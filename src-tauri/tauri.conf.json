@@ -21,7 +21,8 @@
         "minWidth": 800,
         "minHeight": 600,
         "decorations": false,
-        "dragDropEnabled": true
+        "dragDropEnabled": true,
+        "skipTaskbar": true
       }
     ],
     "security": {

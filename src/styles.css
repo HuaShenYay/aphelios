@@ -175,6 +175,72 @@
   }
 }
 
+/* ============================================
+   GLOBAL DARK MODE OVERRIDES
+   These rules automatically apply dark mode to common patterns
+   Usage: Just ensure [data-theme="dark"] is set on html element
+   ============================================ */
+
+[data-theme="dark"] {
+  /* White background overrides */
+  .bg-white { background-color: var(--surface) !important; }
+  .bg-white\/60 { background-color: rgba(37, 34, 29, 0.6) !important; }
+  .bg-white\/70 { background-color: rgba(37, 34, 29, 0.7) !important; }
+  .bg-white\/80 { background-color: rgba(37, 34, 29, 0.8) !important; }
+  .bg-white\/90 { background-color: rgba(37, 34, 29, 0.9) !important; }
+  .bg-white\/95 { background-color: var(--glass-bg) !important; }
+  .bg-white\/100 { background-color: var(--surface) !important; }
+
+  /* Black text overrides */
+  .text-black { color: var(--novel-text-main) !important; }
+  .text-black\/90 { color: var(--novel-text-main) !important; }
+  .text-black\/80 { color: var(--novel-text-main) !important; }
+  .text-black\/70 { color: var(--novel-text-muted) !important; }
+  .text-black\/60 { color: var(--novel-text-muted) !important; }
+  .text-black\/50 { color: var(--novel-text-muted) !important; }
+  .text-black\/40 { color: var(--novel-text-muted) !important; }
+  .text-black\/30 { color: var(--novel-text-muted) !important; }
+  .text-black\/20 { color: var(--novel-text-muted) !important; }
+  .text-black\/10 { color: var(--novel-text-muted) !important; }
+
+  /* Border overrides */
+  .border-white { border-color: var(--novel-border) !important; }
+  .border-white\/... { border-color: var(--novel-border) !important; }
+  .border-black\/... { border-color: rgba(232, 226, 217, 0.1) !important; }
+
+  /* Gradient overrides */
+  .from-white { --tw-gradient-from: var(--surface) !important; }
+  .to-white { --tw-gradient-to: var(--surface) !important; }
+  .via-white { --tw-gradient-via-position: var(--surface) !important; }
+
+  /* Shadow overrides - keep existing dark shadows */
+
+  /* Hover background overrides */
+  .hover\:bg-white:hover { background-color: var(--surface-secondary) !important; }
+  .hover\:bg-black\/5:hover { background-color: rgba(232, 226, 217, 0.05) !important; }
+  .hover\:bg-black\/10:hover { background-color: rgba(232, 226, 217, 0.1) !important; }
+
+  /* Invert icons that are black by default */
+  .text-black svg,
+  svg.text-black { filter: invert(1) brightness(0.9); }
+
+  /* Input fields */
+  input, textarea {
+    background-color: var(--field-background);
+    color: var(--field-foreground);
+    border-color: var(--border);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    background: var(--novel-bg-cream);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar);
+    border-radius: 9999px;
+  }
+}
+
 /* Custom Cursor */
 body {
   cursor:
@@ -648,28 +714,59 @@ html {
   opacity: 0.5;
 }
 
-/* Milkdown Crepe UI - Aggressive Glassmorphism & Localization */
-/* We target .crepe-floating and specific menu classes directly to handle Portals */
-
-.crepe-floating,
-.crepe-slash-menu,
-.crepe-bubble-menu {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(32px) !important;
-  -webkit-backdrop-filter: blur(32px) !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 1.5rem !important;
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15) !important;
-  padding: 8px !important;
-  color: var(--novel-text-main) !important;
+/* Milkdown Slash Menu - Base Styles (Light Mode) */
+.milkdown-slash-menu {
+  font-family: var(--font-sans) !important;
 }
 
-[data-theme="dark"] .crepe-floating,
+.milkdown-slash-menu .tab-group li {
+  font-family: var(--font-sans) !important;
+}
+
+.milkdown-slash-menu .menu-group h6 {
+  font-family: var(--font-sans) !important;
+}
+
+.milkdown-slash-menu .menu-group li > span {
+  font-family: var(--font-sans) !important;
+}
+
+/* Fix white backgrounds that may appear */
 [data-theme="dark"] .crepe-slash-menu,
-[data-theme="dark"] .crepe-bubble-menu {
-  background: rgba(30, 28, 24, 0.8) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5) !important;
+[data-theme="dark"] .crepe-slash-menu > div,
+[data-theme="dark"] .crepe-slash-menu [class*="container"],
+[data-theme="dark"] .crepe-slash-menu [class*="wrapper"],
+[data-theme="dark"] .crepe-block-menu,
+[data-theme="dark"] .crepe-block-menu > div {
+  background: rgba(37, 34, 29, 0.95) !important;
+}
+
+/* Tab container background */
+[data-theme="dark"] .crepe-slash-menu [role="tablist"],
+[data-theme="dark"] .crepe-slash-menu [class*="tabs"],
+[data-theme="dark"] .crepe-slash-menu [class*="tabList"] {
+  background: rgba(37, 34, 29, 0.95) !important;
+  border-bottom-color: rgba(166, 139, 106, 0.1) !important;
+}
+
+/* Active tab in dark mode */
+[data-theme="dark"] .crepe-slash-menu-tab[data-active="true"],
+[data-theme="dark"] .crepe-slash-menu [role="tab"][aria-selected="true"] {
+  background: rgba(166, 139, 106, 0.15) !important;
+  color: var(--accent) !important;
+}
+
+/* Menu items hover in dark mode */
+[data-theme="dark"] .crepe-slash-menu-item:hover,
+[data-theme="dark"] .crepe-slash-menu [role="menuitem"]:hover,
+[data-theme="dark"] .crepe-block-menu button:hover {
+  background: rgba(166, 139, 106, 0.12) !important;
+}
+
+/* Selected menu item */
+[data-theme="dark"] .crepe-slash-menu-item[data-selected="true"],
+[data-theme="dark"] .crepe-slash-menu [role="menuitem"][data-selected="true"] {
+  background: rgba(166, 139, 106, 0.2) !important;
 }
 
 /* Button & Item Styling */
@@ -681,61 +778,109 @@ html {
   padding: 8px 12px !important;
 }
 
-.crepe-floating button:hover,
-.crepe-slash-menu-item:hover,
-.crepe-bubble-menu-button:hover {
-  background-color: rgba(107, 127, 127, 0.1) !important;
+/* Tab styling for slash menu */
+.crepe-slash-menu-tab,
+.crepe-slash-menu [role="tab"] {
+  padding: 8px 16px !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.2s ease !important;
 }
 
-[data-theme="dark"] .crepe-floating button:hover,
-[data-theme="dark"] .crepe-slash-menu-item:hover,
-[data-theme="dark"] .crepe-bubble-menu-button:hover {
-  background-color: rgba(255, 255, 255, 0.08) !important;
+.crepe-slash-menu-tab:hover,
+.crepe-slash-menu [role="tab"]:hover {
+  background-color: rgba(107, 127, 127, 0.08) !important;
 }
 
-/* Localization for Slash Menu Header Labels */
-.crepe-slash-menu-group-label {
+.crepe-slash-menu-tab[data-active="true"],
+.crepe-slash-menu [role="tab"][aria-selected="true"] {
+  background-color: rgba(107, 127, 127, 0.12) !important;
+  font-weight: 600 !important;
+}
+
+/* ============================================
+   MILKDOWN CREPE COMPLETE LOCALIZATION
+   ============================================ */
+
+/* Tab Headers - Text, List, Advanced */
+.milkdown-slash-menu .tab-group li {
   font-size: 0 !important;
-  padding: 8px 12px 4px !important;
-  opacity: 0.6;
 }
 
-.crepe-slash-menu-group-label::after {
-  font-size: 11px;
-  font-weight: 700;
+.milkdown-slash-menu .tab-group li::after {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Light mode tab text */
+.milkdown-slash-menu .tab-group li:nth-child(1)::after { content: "文本"; }
+.milkdown-slash-menu .tab-group li:nth-child(2)::after { content: "列表"; }
+.milkdown-slash-menu .tab-group li:nth-child(3)::after { content: "高级"; }
+
+/* Section Headers (TEXT, LIST, ADVANCED in caps) */
+.milkdown-slash-menu .menu-group h6 {
+  font-size: 0 !important;
+  padding: 14px 10px !important;
+}
+
+.milkdown-slash-menu .menu-group h6::after {
+  font-size: 14px;
+  font-weight: 600;
   text-transform: uppercase;
-  color: var(--novel-text-muted);
+  letter-spacing: 0.05em;
 }
 
-.crepe-slash-menu [data-category="Text"] .crepe-slash-menu-group-label::after { content: "基础文本"; }
-.crepe-slash-menu [data-category="List"] .crepe-slash-menu-group-label::after { content: "列表布局"; }
-.crepe-slash-menu [data-category="Advanced"] .crepe-slash-menu-group-label::after { content: "高级组件"; }
+/* Menu groups - by position since we can't use text content selector */
+.milkdown-slash-menu .menu-groups .menu-group:nth-child(1) h6::after { content: "文本"; }
+.milkdown-slash-menu .menu-groups .menu-group:nth-child(2) h6::after { content: "列表"; }
+.milkdown-slash-menu .menu-groups .menu-group:nth-child(3) h6::after { content: "高级"; }
 
-/* Localization for Menu Item Labels */
-.crepe-slash-menu-item .label {
-  font-size: 14px !important;
-}
+/* Menu Items - We need to target by index or find another way */
+/* Milkdown renders items with specific order, we'll use nth-child */
 
-.crepe-slash-menu-item[data-id="h1"] .label { font-size: 0 !important; }
-.crepe-slash-menu-item[data-id="h1"] .label::after { content: "一级标题"; font-size: 14px; }
-.crepe-slash-menu-item[data-id="h2"] .label { font-size: 0 !important; }
-.crepe-slash-menu-item[data-id="h2"] .label::after { content: "二级标题"; font-size: 14px; }
-.crepe-slash-menu-item[data-id="h3"] .label { font-size: 0 !important; }
-.crepe-slash-menu-item[data-id="h3"] .label::after { content: "三级标题"; font-size: 14px; }
-.crepe-slash-menu-item[data-id="text"] .label { font-size: 0 !important; }
-.crepe-slash-menu-item[data-id="text"] .label::after { content: "正文段落"; font-size: 14px; }
-.crepe-slash-menu-item[data-id="bullet_list"] .label { font-size: 0 !important; }
-.crepe-slash-menu-item[data-id="bullet_list"] .label::after { content: "圆点列表"; font-size: 14px; }
-.crepe-slash-menu-item[data-id="ordered_list"] .label { font-size: 0 !important; }
-.crepe-slash-menu-item[data-id="ordered_list"] .label::after { content: "数字列表"; font-size: 14px; }
-.crepe-slash-menu-item[data-id="blockquote"] .label { font-size: 0 !important; }
-.crepe-slash-menu-item[data-id="blockquote"] .label::after { content: "引用段落"; font-size: 14px; }
-.crepe-slash-menu-item[data-id="hr"] .label { font-size: 0 !important; }
-.crepe-slash-menu-item[data-id="hr"] .label::after { content: "水平分割线"; font-size: 14px; }
-.crepe-slash-menu-item[data-id="code_block"] .label { font-size: 0 !important; }
-.crepe-slash-menu-item[data-id="code_block"] .label::after { content: "代码区块"; font-size: 14px; }
-.crepe-slash-menu-item[data-id="image"] .label { font-size: 0 !important; }
-.crepe-slash-menu-item[data-id="image"] .label::after { content: "上传图片"; font-size: 14px; }
+/* Text Group - Heading 1-6 and Text */
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(1) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(1) > span::after { content: "一级标题"; font-size: 14px; }
+
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(2) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(2) > span::after { content: "二级标题"; font-size: 14px; }
+
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(3) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(3) > span::after { content: "三级标题"; font-size: 14px; }
+
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(4) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(4) > span::after { content: "四级标题"; font-size: 14px; }
+
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(5) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(5) > span::after { content: "五级标题"; font-size: 14px; }
+
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(6) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(6) > span::after { content: "六级标题"; font-size: 14px; }
+
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(7) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(1) li:nth-child(7) > span::after { content: "正文段落"; font-size: 14px; }
+
+/* List Group */
+.milkdown-slash-menu .menu-group:nth-child(2) li:nth-child(1) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(2) li:nth-child(1) > span::after { content: "圆点列表"; font-size: 14px; }
+
+.milkdown-slash-menu .menu-group:nth-child(2) li:nth-child(2) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(2) li:nth-child(2) > span::after { content: "数字列表"; font-size: 14px; }
+
+.milkdown-slash-menu .menu-group:nth-child(2) li:nth-child(3) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(2) li:nth-child(3) > span::after { content: "任务列表"; font-size: 14px; }
+
+/* Advanced Group */
+.milkdown-slash-menu .menu-group:nth-child(3) li:nth-child(1) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(3) li:nth-child(1) > span::after { content: "引用段落"; font-size: 14px; }
+
+.milkdown-slash-menu .menu-group:nth-child(3) li:nth-child(2) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(3) li:nth-child(2) > span::after { content: "代码块"; font-size: 14px; }
+
+.milkdown-slash-menu .menu-group:nth-child(3) li:nth-child(3) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(3) li:nth-child(3) > span::after { content: "分割线"; font-size: 14px; }
+
+.milkdown-slash-menu .menu-group:nth-child(3) li:nth-child(4) > span { font-size: 0 !important; }
+.milkdown-slash-menu .menu-group:nth-child(3) li:nth-child(4) > span::after { content: "图片"; font-size: 14px; }
 
 /* Home Page Dark Mode Enhancements */
 [data-theme="dark"] .gradient-bg {
@@ -755,4 +900,93 @@ html {
 [data-theme="dark"] .book-cover-frame {
   background: #2D2A24;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================
+   MILKDOWN DARK MODE COMPREHENSIVE OVERRIDES
+   Using html[data-theme="dark"] to target portal-rendered elements
+   ============================================ */
+
+/* Force all Milkdown UI to use dark theme colors */
+html[data-theme="dark"] .milkdown,
+html[data-theme="dark"] .milkdown-editor,
+html[data-theme="dark"] .crepe-editor {
+  --crepe-color-surface: #25221d !important;
+  --crepe-color-on-surface: #e8e2d9 !important;
+  --crepe-color-outline: #9a958d !important;
+  --crepe-color-hover: rgba(166, 139, 106, 0.15) !important;
+  --crepe-color-selected: rgba(166, 139, 106, 0.25) !important;
+}
+
+/* Slash Menu - Main container */
+html[data-theme="dark"] .milkdown-slash-menu {
+  background: #25221d !important;
+  color: #e8e2d9 !important;
+  border: 1px solid rgba(166, 139, 106, 0.15) !important;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Tab Group */
+html[data-theme="dark"] .milkdown-slash-menu .tab-group {
+  border-bottom-color: rgba(166, 139, 106, 0.15) !important;
+}
+
+html[data-theme="dark"] .milkdown-slash-menu .tab-group li {
+  color: #9a958d !important;
+}
+
+html[data-theme="dark"] .milkdown-slash-menu .tab-group li:hover {
+  background: rgba(166, 139, 106, 0.1) !important;
+  color: #e8e2d9 !important;
+}
+
+html[data-theme="dark"] .milkdown-slash-menu .tab-group li.selected {
+  background: rgba(166, 139, 106, 0.2) !important;
+  color: #a68b6a !important;
+}
+
+/* Menu Groups */
+html[data-theme="dark"] .milkdown-slash-menu .menu-groups {
+  background: #25221d !important;
+}
+
+html[data-theme="dark"] .milkdown-slash-menu .menu-group h6 {
+  color: #9a958d !important;
+}
+
+html[data-theme="dark"] .milkdown-slash-menu .menu-group li {
+  color: #e8e2d9 !important;
+}
+
+html[data-theme="dark"] .milkdown-slash-menu .menu-group li.hover {
+  background: rgba(166, 139, 106, 0.15) !important;
+}
+
+html[data-theme="dark"] .milkdown-slash-menu .menu-group li.active {
+  background: rgba(166, 139, 106, 0.25) !important;
+}
+
+html[data-theme="dark"] .milkdown-slash-menu .menu-group li svg {
+  color: #9a958d !important;
+  fill: #9a958d !important;
+}
+
+/* Group divider */
+html[data-theme="dark"] .milkdown-slash-menu .menu-group + .menu-group::before {
+  background: rgba(166, 139, 106, 0.15) !important;
+}
+
+/* Block Handle (the + button) */
+html[data-theme="dark"] .milkdown-block-handle .operation-item svg {
+  fill: #9a958d !important;
+}
+
+html[data-theme="dark"] .milkdown-block-handle .operation-item:hover {
+  background: rgba(166, 139, 106, 0.15) !important;
+}
+
+/* Placeholder text */
+html[data-theme="dark"] .milkdown .ProseMirror p.is-editor-empty:first-child::before {
+  color: #9a958d !important;
+  opacity: 0.5 !important;
 }

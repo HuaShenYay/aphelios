@@ -303,7 +303,7 @@ export function ProjectList({
                     className="group cursor-pointer flex flex-col"
                     onClick={onCreateProject}
                   >
-                    <div className="aspect-3/4 border-2 border-dashed border-(--novel-border) rounded-[var(--radius)] flex flex-col items-center justify-center transition-all duration-300 group-hover:border-(--novel-primary) group-hover:bg-[rgba(107,127,127,0.05)]">
+                    <div className="aspect-3/4 border-2 border-dashed border-(--novel-border) rounded-[var(--radius)] flex flex-col items-center justify-center transition-all duration-300 group-hover:border-(--novel-primary) group-hover:bg-(--novel-primary)/5">
                       <div className="w-12 h-12 rounded-full bg-(--novel-primary) text-white flex items-center justify-center shadow-lg mb-4 transition-transform group-hover:scale-110">
                         <span className="text-2xl font-light">+</span>
                       </div>

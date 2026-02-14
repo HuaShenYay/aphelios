@@ -138,4 +138,9 @@ export const Icons = {
       <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
     </svg>
   ),
+  panelLeft: () => (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M13 7h10v10h-2V7h-8zm-2 0v10H1V7h10zm-1-3v2h6V4H10z"/>
+    </svg>
+  ),
 }

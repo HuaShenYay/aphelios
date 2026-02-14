@@ -275,50 +275,73 @@ export function EditorView({
       <WindowManager title={project.name} />
       
       <div className="h-screen pt-9 gradient-bg relative overflow-hidden">
-        {/* Floating Sidebar - Now truly floating/hovering */}
+        {/* Collapsible Floating Sidebar */}
         <div 
-          className={`fixed left-4 top-13 bottom-4 glass-card transition-all duration-500 ease-in-out flex flex-col z-50 ${
-            sidebarCollapsed ? 'w-12 -translate-x-full opacity-0' : 'w-64 opacity-100 shadow-2xl'
+          className={`fixed left-4 top-13 bottom-4 glass-card transition-all duration-300 ease-in-out flex flex-col z-50 ${
+            sidebarCollapsed ? 'w-14' : 'w-64'
           }`}
         >
-          {/* Collapse Button - Repositioned for floating sidebar */}
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="fixed left-4 top-13 w-10 h-10 bg-white/50 backdrop-blur-md border border-white/20 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all z-40 group"
-            style={{ 
-              opacity: sidebarCollapsed ? 1 : 0,
-              pointerEvents: sidebarCollapsed ? 'auto' : 'none',
-              left: sidebarCollapsed ? '1rem' : '17rem'
-            }}
-          >
-            <svg 
-              className={`w-4 h-4 text-(--novel-text-muted) transition-transform duration-500 ${
-                sidebarCollapsed ? 'rotate-180' : ''
-              }`} 
-              viewBox="0 0 24 24" 
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+          {/* Sidebar Header with Collapse Toggle */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-(--novel-border)/50">
+            {!sidebarCollapsed && (
+              <button
+                onClick={onBack}
+                className="flex items-center gap-2 text-sm text-(--novel-text-muted) hover:text-(--novel-text-main) transition-colors"
+                title="返回项目列表"
+              >
+                {Icons.back()}
+                <span>返回</span>
+              </button>
+            )}
+            
+            {/* Collapse/Expand Toggle Button - Right side, vertically centered */}
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+              title={sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'}
             >
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
-          </button>
+              {sidebarCollapsed ? (
+                <svg 
+                  className="w-5 h-5 text-(--novel-text-muted) transition-transform duration-300" 
+                  viewBox="0 0 24 24" 
+                  fill="currentColor"
+                >
+                  <path d="M11 17h10V7H11v10zm2-2V9h6v6h-6zM3 7h6v10H3V7z"/>
+                </svg>
+              ) : (
+                <svg 
+                  className="w-5 h-5 text-(--novel-text-muted) transition-transform duration-300" 
+                  viewBox="0 0 24 24" 
+                  fill="currentColor"
+                >
+                  <path d="M13 7h10v10h-2V7h-8zm-2 0v10H1V7h10zm-1-3v2h6V4H10z"/>
+                </svg>
+              )}
+            </button>
+          </div>
           
           {/* Sidebar Content */}
-          <div className={`flex flex-col h-full ${sidebarCollapsed ? 'items-center px-2' : 'px-4'} py-4`}>
-            {/* Back Button */}
-            <button
-              onClick={onBack}
-              className={`flex items-center gap-2 text-(--novel-text-muted) hover:text-(--novel-text-main) transition-colors ${
-                sidebarCollapsed ? 'justify-center w-8 h-8' : 'mb-4'
-              }`}
-              title="返回项目列表"
-            >
-              {Icons.back()}
-              {!sidebarCollapsed && <span className="text-sm">返回</span>}
-            </button>
-            
-            {!sidebarCollapsed && (
+          <div className={`flex flex-col flex-1 overflow-hidden ${sidebarCollapsed ? 'px-2' : 'px-4'} py-4`}>
+            {sidebarCollapsed ? (
+              /* Collapsed State - Show minimal icons */
+              <div className="flex flex-col items-center gap-2 mt-2">
+                <button
+                  onClick={onBack}
+                  className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  title="返回项目列表"
+                >
+                  {Icons.back()}
+                </button>
+                <button
+                  onClick={() => setShowCreateScene(true)}
+                  className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  title="新建章节"
+                >
+                  {Icons.add()}
+                </button>
+              </div>
+            ) : (
+              /* Expanded State - Full content */
               <>
                 {/* Project Title */}
                 <h2 className="font-serif text-lg font-medium text-(--novel-text-main) mb-4 truncate">
