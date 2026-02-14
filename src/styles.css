@@ -1,0 +1,660 @@
+/* Novel Editor - Refined Design */
+@import "tailwindcss";
+@import "@heroui/styles";
+
+/* Classical Warm Cream Theme - Light Mode */
+@layer base {
+  :root,
+  .light,
+  [data-theme="light"] {
+    color-scheme: light;
+
+    /* Classical Warm Palette - Reference Image Based */
+    --novel-primary: #6B7F7F; /* Sage Green Button + Selected State */
+    --novel-primary-light: #8CA6A6;
+    --novel-bg-cream: #F2EFE9;
+    --novel-bg-paper: #FAF9F6;
+    --novel-bg-sidebar: #F5F2EB; /* Solid warm cream */
+    --novel-text-main: #4A453C;
+    --novel-text-muted: #8C867D;
+    --novel-text-accent: #5A8E8E; /* Teal text for stats */
+    --novel-border: rgba(74, 69, 60, 0.08);
+    --novel-accent-warm: #C4A484;
+
+    /* Atmospheric Gradient - Warm Aurora */
+    --gradient-start: #E6DACE; /* Warm Beige */
+    --gradient-mid: #D4C5B0;   /* Soft Brown */
+    --gradient-end: #C8D6D6;   /* Muted Teal/Grey mix */
+
+    /* Surface Colors */
+    --background: var(--novel-bg-cream);
+    --foreground: var(--novel-text-main);
+    --surface: var(--novel-bg-paper);
+    --surface-foreground: var(--novel-text-main);
+    --surface-secondary: #ede9e2;
+    --surface-secondary-foreground: var(--novel-text-main);
+    --surface-tertiary: #e5e1da;
+    --surface-tertiary-foreground: var(--novel-text-main);
+
+    /* Accent */
+    --accent: var(--novel-primary);
+    --accent-foreground: #faf9f6;
+
+    /* Component Colors */
+    --default: var(--surface-secondary);
+    --default-foreground: var(--novel-text-main);
+    --muted: var(--novel-text-muted);
+    --border: var(--novel-border);
+    --separator: rgba(74, 69, 60, 0.06);
+    --overlay: rgba(74, 69, 60, 0.4);
+    --overlay-foreground: var(--novel-text-main);
+
+    /* Status Colors (warm tones) */
+    --success: #7a9b7a;
+    --success-foreground: #faf9f6;
+    --warning: #c4a574;
+    --warning-foreground: #4a453c;
+    --danger: #b08080;
+    --danger-foreground: #faf9f6;
+
+    /* Field Colors */
+    --field-background: var(--novel-bg-paper);
+    --field-foreground: var(--novel-text-main);
+    --field-placeholder: var(--novel-text-muted);
+
+    /* Scrollbar */
+    --scrollbar: rgba(122, 107, 79, 0.2);
+    --segment: var(--surface-secondary);
+    --segment-foreground: var(--novel-text-main);
+
+    /* Glass Effect - Enhanced */
+    --glass-bg: rgba(250, 249, 246, 0.75);
+    --glass-bg-sidebar: rgba(245, 242, 236, 0.85);
+    --glass-border: rgba(122, 107, 79, 0.12);
+    --glass-border-light: rgba(255, 255, 255, 0.5);
+
+    /* Border Radius */
+    --radius: 0.75rem;
+    --field-radius: 0.5rem;
+
+    /* Font Family - HarmonyOS Sans SC */
+    --font-sans:
+      "HarmonyOS Sans SC", "Inter", -apple-system, BlinkMacSystemFont,
+      sans-serif;
+
+    /* Spacing */
+    --spacing: 0.25rem;
+
+    /* Enhanced Shadows */
+    /* Enhanced Shadows */
+    --shadow-sm: 0 2px 8px -2px rgba(74, 69, 60, 0.05);
+    --shadow: 0 4px 6px -1px rgba(74, 69, 60, 0.06), 0 2px 4px -2px rgba(74, 69, 60, 0.04);
+    --shadow-lg: 0 20px 25px -5px rgba(74, 69, 60, 0.1), 0 10px 10px -5px rgba(74, 69, 60, 0.04);
+    --shadow-card: 0 20px 40px -4px rgba(74, 69, 60, 0.08), 0 8px 16px -4px rgba(74, 69, 60, 0.04);
+    --shadow-glow: 0 0 40px rgba(184, 168, 138, 0.15);
+  }
+
+  /* Dark Theme - Warm Dark */
+  .dark,
+  [data-theme="dark"] {
+    color-scheme: dark;
+
+    /* Dark Warm Palette */
+    --novel-primary: #a68b6a;
+    --novel-primary-light: #b89b7a;
+    --novel-bg-cream: #1a1814;
+    --novel-bg-paper: #25221d;
+    --novel-text-main: #e8e2d9;
+    --novel-text-muted: #9a958d;
+    --novel-border: rgba(232, 226, 217, 0.1);
+    --novel-accent-warm: #c9a86c;
+
+    /* Surface Colors */
+    --background: var(--novel-bg-cream);
+    --foreground: var(--novel-text-main);
+    --surface: var(--novel-bg-paper);
+    --surface-foreground: var(--novel-text-main);
+    --surface-secondary: #2f2c26;
+    --surface-secondary-foreground: var(--novel-text-main);
+    --surface-tertiary: #3a362f;
+    --surface-tertiary-foreground: var(--novel-text-main);
+
+    /* Accent */
+    --accent: var(--novel-primary);
+    --accent-foreground: #1a1814;
+
+    /* Component Colors */
+    --default: var(--surface-secondary);
+    --default-foreground: var(--novel-text-main);
+    --muted: var(--novel-text-muted);
+    --border: var(--novel-border);
+    --separator: rgba(232, 226, 217, 0.08);
+    --overlay: rgba(26, 24, 20, 0.8);
+    --overlay-foreground: var(--novel-text-main);
+
+    /* Status Colors */
+    --success: #7a9a7a;
+    --success-foreground: #1a1814;
+    --warning: #c9a86c;
+    --warning-foreground: #1a1814;
+    --danger: #a67b7b;
+    --danger-foreground: #fdfcf7;
+
+    /* Field Colors */
+    --field-background: var(--novel-bg-paper);
+    --field-foreground: var(--novel-text-main);
+    --field-placeholder: var(--novel-text-muted);
+
+    /* Scrollbar */
+    --scrollbar: rgba(166, 139, 106, 0.3);
+    --segment: var(--surface-secondary);
+    --segment-foreground: var(--novel-text-main);
+
+    /* Glass Effect */
+    --glass-bg: rgba(37, 34, 29, 0.85);
+    --glass-border: rgba(166, 139, 106, 0.2);
+
+    /* Border Radius */
+    --radius: 0.5rem;
+    --field-radius: 0.75rem;
+
+    /* Font Family - HarmonyOS Sans SC */
+    --font-sans:
+      "HarmonyOS Sans SC", "Inter", -apple-system, BlinkMacSystemFont,
+      sans-serif;
+
+    /* Spacing */
+    --spacing: 0.25rem;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+    --shadow-lg:
+      0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  }
+}
+
+/* Custom Cursor */
+body {
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='black' stroke='white' stroke-width='1'><path d='M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87a.45.45 0 0 0 .35-.76l-12.43-12.43a.45.45 0 0 0-.85.26z'/></svg>"),
+    auto;
+}
+
+button, a, .cursor-pointer, [role="button"], .project-card {
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='black' stroke='white' stroke-width='1'><path d='M10 2a8 8 0 1 0 8 8 8 8 0 0 0-8-8zm0 14a6 6 0 1 1 6-6 6 6 0 0 1-6 6z'/><circle cx='10' cy='10' r='2' fill='white'/></svg>")
+    10 10,
+    pointer;
+}
+
+/* Restore native cursor for window controls */
+.window-control, [data-tauri-drag-region] {
+  cursor: auto !important;
+}
+
+/* Global Styles */
+:root {
+  font-family:
+    "HarmonyOS Sans SC", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Serif Font for Editor - override for now to ensure HarmonyOS Sans is dominant elsewhere unless specified */
+.font-serif {
+  font-family: "HarmonyOS Sans SC", "Source Serif 4", Georgia, serif;
+}
+
+/* Glass Effect */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+/* Glass Sidebar - Enhanced with frosted glass effect */
+/* Glass Sidebar - Enhanced with frosted glass effect */
+.glass-sidebar {
+  background: var(--glass-bg-sidebar);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(0, 0, 0, 0.03);
+  box-shadow: 4px 0 24px rgba(74, 69, 60, 0.02);
+}
+
+.dark .glass-sidebar {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 28, 24, 0.4) 0%,
+    rgba(25, 23, 20, 0.25) 100%
+  );
+  border-right: 1px solid rgba(255, 255, 255, 0.03);
+  box-shadow:
+    inset -1px 0 0 rgba(255, 255, 255, 0.01),
+    4px 0 24px rgba(0, 0, 0, 0.05);
+}
+
+/* Gradient Background for Main Content */
+.gradient-bg {
+  background: linear-gradient(
+    135deg,
+    var(--gradient-start) 0%,
+    var(--gradient-mid) 50%,
+    var(--gradient-end) 100%
+  );
+  position: relative;
+}
+
+.gradient-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(200, 180, 150, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(100, 140, 140, 0.1) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+/* Glass Card Effect */
+/* Glass Card Effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 9999px; /* Pill shape for header elements */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.white-card {
+    background: #FFFFFF;
+    border-radius: 1.5rem;
+    padding: 1.25rem;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.white-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* White Frame for Book Covers - Refined */
+/* White Frame for Book Covers - Refined */
+.book-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    "HarmonyOS Sans SC", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(19, 127, 236, 0.15);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(19, 127, 236, 0.25);
+}
+
+/* Title Ornament */
+.title-ornament {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.title-ornament .line {
+  width: 48px;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.2;
+}
+
+.title-ornament .line:first-child {
+  margin-bottom: 1rem;
+}
+
+.title-ornament .line:last-child {
+  margin-top: 1rem;
+  width: 96px;
+}
+
+/* Writing Styles */
+.writing-text {
+  font-family: "Source Serif 4", Georgia, serif;
+  line-height: 1.9;
+  letter-spacing: -0.01em;
+  font-size: 1.125rem;
+  color: var(--novel-text-main);
+}
+
+/* Project Card */
+.project-card {
+  transition:
+    transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+    box-shadow 0.4s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Book Cover Frame */
+.book-cover-frame {
+  aspect-ratio: 3/4;
+  border-radius: 1.5rem;
+  padding: 0.75rem;
+  background: white;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+}
+
+.book-cover-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 1rem;
+}
+
+/* Floating Toolbar */
+.floating-toolbar {
+  position: fixed;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+}
+
+/* AI Button */
+.ai-button {
+  position: fixed;
+  bottom: 2.5rem;
+  right: 2.5rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 10px 15px -3px rgb(19 127 236 / 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  z-index: 50;
+}
+
+.ai-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 20px 25px -5px rgb(19 127 236 / 0.4);
+}
+
+/* Chapter Number */
+.chapter-number {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--novel-text-muted);
+  min-width: 1.5rem;
+}
+
+.chapter-number.active {
+  color: var(--accent);
+}
+
+/* Progress Bar */
+.progress-bar {
+  height: 3px;
+  border-radius: 1.5px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: white;
+  border-radius: 1.5px;
+}
+
+/* Status Dot */
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34c759;
+}
+
+.status-dot.saving {
+  background: #ff9500;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 400ms ease-out forwards;
+}
+
+.stagger-children > * {
+  animation: fadeIn 500ms ease-out forwards;
+  opacity: 0;
+}
+
+.stagger-children > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger-children > *:nth-child(2) {
+  animation-delay: 80ms;
+}
+.stagger-children > *:nth-child(3) {
+  animation-delay: 160ms;
+}
+.stagger-children > *:nth-child(4) {
+  animation-delay: 240ms;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+/* Tree Item */
+.tree-item {
+  border-radius: 0.5rem;
+  transition: background-color 200ms;
+}
+
+.tree-item:hover {
+  background: rgba(19, 127, 236, 0.05);
+}
+
+.tree-item.selected {
+  background: rgba(19, 127, 236, 0.1);
+}
+
+/* Window Manager Styles - Fixed title bar */
+[data-theme="dark"] .fixed.top-0 {
+  background: var(--novel-bg-cream);
+}
+
+/* Milkdown Customization */
+.milkyway {
+  --editor-background: var(--novel-bg-paper) !important;
+}
+
+.milkyway .editor {
+  padding: 2rem 4rem !important;
+  font-family: "Source Serif 4", Georgia, serif;
+  line-height: 1.9 !important;
+  font-size: 1.125rem;
+}
+
+.milkyway .ProseMirror {
+  min-height: calc(100vh - 300px);
+  color: var(--novel-text-main);
+}
+
+.milkyway .ProseMirror:focus {
+  outline: none !important;
+}
+
+.milkyway .ProseMirror p {
+  margin-bottom: 1.5em;
+}
+
+/* Milkdown Dark Mode */
+[data-theme="dark"] .milkyway {
+  --editor-background: var(--novel-bg-paper) !important;
+}
+
+[data-theme="dark"] .milkyway .ProseMirror {
+  color: var(--novel-text-main);
+}
+
+[data-theme="dark"] .milkyway .ProseMirror p {
+  color: var(--novel-text-main);
+}
+
+[data-theme="dark"] .milkyway .ProseMirror h1,
+[data-theme="dark"] .milkyway .ProseMirror h2,
+[data-theme="dark"] .milkyway .ProseMirror h3,
+[data-theme="dark"] .milkyway .ProseMirror h4,
+[data-theme="dark"] .milkyway .ProseMirror h5,
+[data-theme="dark"] .milkyway .ProseMirror h6 {
+  color: var(--novel-text-main);
+}
+
+[data-theme="dark"] .milkyway .ProseMirror blockquote {
+  border-left-color: var(--accent);
+  color: var(--novel-text-muted);
+}
+
+[data-theme="dark"] .milkyway .ProseMirror code {
+  background: var(--surface);
+  color: var(--accent);
+}
+
+[data-theme="dark"] .milkyway .ProseMirror pre {
+  background: var(--surface);
+  color: var(--novel-text-main);
+}
+
+[data-theme="dark"] .milkyway .ProseMirror a {
+  color: var(--accent);
+}
+
+[data-theme="dark"] .milkyway .ProseMirror hr {
+  border-color: var(--novel-border);
+}
+
+[data-theme="dark"] .milkyway .ProseMirror ul,
+[data-theme="dark"] .milkyway .ProseMirror ol {
+  color: var(--novel-text-main);
+}
+
+[data-theme="dark"] .milkyway .ProseMirror li::marker {
+  color: var(--novel-text-muted);
+}
+
+/* Editor placeholder */
+[data-theme="dark"]
+  .milkyway
+  .ProseMirror
+  p.is-editor-empty:first-child::before {
+  color: var(--novel-text-muted);
+  opacity: 0.5;
+}
+
+/* Range Input Custom Styles */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--novel-text-main);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--novel-text-main);
+  cursor: pointer;
+  border: none;
+}
