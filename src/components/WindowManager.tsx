@@ -49,7 +49,7 @@ export function WindowManager({ title = 'Aphelios' }: WindowManagerProps) {
           className="w-4 h-4 object-contain pointer-events-none"
         />
         <span className="text-xs font-medium text-[var(--novel-text-main)] opacity-80 pointer-events-none">
-          {title}
+          {title} <span className="text-[10px] opacity-60">ɑ</span>
         </span>
       </div>
 
