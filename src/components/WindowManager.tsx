@@ -20,7 +20,7 @@ export function WindowManager({ title = 'Aphelios' }: WindowManagerProps) {
     })
 
     return () => {
-      unlisten.then((fn) => fn())
+      unlisten.then((fn: () => void) => fn())
     }
   }, [appWindow])
 

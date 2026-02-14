@@ -1,5 +1,6 @@
 import { Spinner, Button, Input, ButtonGroup } from "@heroui/react";
 import { useState, useEffect } from "react";
+import { open } from "@tauri-apps/plugin-shell";
 import { FolderOpen, TrashBin } from "@gravity-ui/icons";
 import { WindowManager } from "../components/WindowManager";
 import { Sidebar } from "../components/Sidebar";
@@ -71,7 +72,7 @@ export function ProjectList({
     if (!contextMenu.project) return;
     if (key === "openFolder") {
       // Open project folder - use native method
-      window.open(`file://${contextMenu.project.folder_path}`);
+      open(contextMenu.project.folder_path);
     } else if (key === "edit") {
       // Open edit modal
       const savedCover = localStorage.getItem(
@@ -154,39 +155,9 @@ export function ProjectList({
         <main className="flex-1 flex flex-col h-full overflow-hidden relative">
           {/* Glass Header */}
           <header className="h-16 flex items-center justify-between px-8 shrink-0 glass-card mx-4 mt-4 mb-2 z-10 transition-all duration-300">
-             {/* View Mode Toggle - Left aligned now */}
-             <div className="flex bg-black/5 p-1 rounded-full backdrop-blur-sm self-center">
-                  <button
-                    onClick={() => setViewMode("all")}
-                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      viewMode === "all"
-                        ? "bg-white shadow-sm text-(--novel-text-main)"
-                        : "text-(--novel-text-muted) hover:text-(--novel-text-main)"
-                    }`}
-                  >
-                    全部
-                  </button>
-                  <button
-                    onClick={() => setViewMode("recent")}
-                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      viewMode === "recent"
-                        ? "bg-white shadow-sm text-(--novel-text-main)"
-                        : "text-(--novel-text-muted) hover:text-(--novel-text-main)"
-                    }`}
-                  >
-                    最近
-                  </button>
-                  <button
-                    onClick={() => setViewMode("favorites")}
-                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      viewMode === "favorites"
-                        ? "bg-white shadow-sm text-(--novel-text-main)"
-                        : "text-(--novel-text-muted) hover:text-(--novel-text-main)"
-                    }`}
-                  >
-                    收藏
-                  </button>
-                </div>
+            <div className="flex-1 max-w-lg">
+              {/* Optional: Add search back here if needed, or keep it as is */}
+            </div>
 
             <div className="flex items-center gap-2">
               <div
@@ -196,15 +167,15 @@ export function ProjectList({
                   placeholder="搜索项目..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-white/50 backdrop-blur-sm rounded-full pl-4"
+                  className="bg-(--field-background)/50 backdrop-blur-sm rounded-[var(--field-radius)] pl-4"
                 />
               </div>
 
               <Button
                 isIconOnly
-                variant="outline"
+                variant="ghost"
                 onPress={() => setIsSearchVisible(!isSearchVisible)}
-                className={`rounded-full ${isSearchVisible ? "bg-black/5" : ""}`}
+                className={`rounded-full ${isSearchVisible ? "bg-(--novel-primary)/10 text-(--novel-primary)" : ""}`}
               >
                 {Icons.search()}
               </Button>
@@ -218,27 +189,63 @@ export function ProjectList({
                 }}
               >
                 <span className="text-lg leading-none">+</span>
-                New Project
+                新建项目
               </button>
             </div>
           </header>
 
           <div className="flex-1 overflow-y-auto p-8">
             <div className="max-w-6xl mx-auto">
-              {/* Content Grid */}
-              <div className="mb-12">
-                <h2
-                  className="text-4xl font-serif font-medium tracking-tight mb-3"
-                  style={{ color: "var(--novel-text-main)" }}
-                >
-                  {getTitle()}
-                </h2>
-                <p
-                  className="text-base font-light tracking-wide"
-                  style={{ color: "var(--novel-text-muted)" }}
-                >
-                  {getSubtitle()}
-                </p>
+              {/* Portfolio Header with Toggle */}
+              <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                  <h2
+                    className="text-4xl font-serif font-medium tracking-tight mb-3"
+                    style={{ color: "var(--novel-text-main)" }}
+                  >
+                    {getTitle()}
+                  </h2>
+                  <p
+                    className="text-base font-light tracking-wide"
+                    style={{ color: "var(--novel-text-muted)" }}
+                  >
+                    {getSubtitle()}
+                  </p>
+                </div>
+
+                {/* View Mode Toggle - Moved here */}
+                <div className="flex bg-(--novel-primary)/5 p-1 rounded-full backdrop-blur-sm">
+                  <button
+                    onClick={() => setViewMode("all")}
+                    className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                      viewMode === "all"
+                        ? "bg-(--surface) shadow-sm text-(--novel-text-main)"
+                        : "text-(--novel-text-muted) hover:text-(--novel-text-main)"
+                    }`}
+                  >
+                    全部
+                  </button>
+                  <button
+                    onClick={() => setViewMode("recent")}
+                    className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                      viewMode === "recent"
+                        ? "bg-(--surface) shadow-sm text-(--novel-text-main)"
+                        : "text-(--novel-text-muted) hover:text-(--novel-text-main)"
+                    }`}
+                  >
+                    最近
+                  </button>
+                  <button
+                    onClick={() => setViewMode("favorites")}
+                    className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                      viewMode === "favorites"
+                        ? "bg-(--surface) shadow-sm text-(--novel-text-main)"
+                        : "text-(--novel-text-muted) hover:text-(--novel-text-main)"
+                    }`}
+                  >
+                    收藏
+                  </button>
+                </div>
               </div>
 
               {loading ? (
@@ -296,12 +303,12 @@ export function ProjectList({
                     className="group cursor-pointer flex flex-col"
                     onClick={onCreateProject}
                   >
-                    <div className="aspect-3/4 border-2 border-dashed border-(--novel-border) rounded-[1.5rem] flex flex-col items-center justify-center transition-all duration-300 group-hover:border-(--novel-primary) group-hover:bg-[rgba(107,127,127,0.05)]">
+                    <div className="aspect-3/4 border-2 border-dashed border-(--novel-border) rounded-[var(--radius)] flex flex-col items-center justify-center transition-all duration-300 group-hover:border-(--novel-primary) group-hover:bg-[rgba(107,127,127,0.05)]">
                       <div className="w-12 h-12 rounded-full bg-(--novel-primary) text-white flex items-center justify-center shadow-lg mb-4 transition-transform group-hover:scale-110">
                         <span className="text-2xl font-light">+</span>
                       </div>
                       <span className="font-serif text-(--novel-text-muted) group-hover:text-(--novel-primary) transition-colors">
-                        New Manuscript
+                        新建手稿
                       </span>
                     </div>
                   </div>
@@ -318,7 +325,7 @@ export function ProjectList({
                         {/* Favorite Badge */}
                         {project.is_favorite && (
                           <div className="absolute top-4 right-4 z-20">
-                            <div className="p-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm text-amber-500">
+                            <div className="p-1.5 bg-(--surface)/90 backdrop-blur-sm rounded-full shadow-sm text-amber-500">
                               {Icons.star()}
                             </div>
                           </div>
@@ -329,7 +336,11 @@ export function ProjectList({
                           <img
                             alt={project.name}
                             className="w-full h-full object-cover"
-                            src={getBookCover(index)}
+                            src={(() => {
+                              const saved = localStorage.getItem(`project_cover_${project.id}`);
+                              const coverIdx = saved ? parseInt(saved) : index;
+                              return getBookCover(coverIdx);
+                            })()}
                           />
                           {/* Gradient Overlay for Mood */}
                           <div className="absolute inset-0 bg-black/10 mix-blend-multiply pointer-events-none" />
@@ -349,11 +360,11 @@ export function ProjectList({
                           style={{ color: "var(--novel-text-accent)" }}
                         >
                           <span>
-                            {project.word_count.toLocaleString()} WORDS
+                            {project.word_count.toLocaleString()} 字
                           </span>
                           <span className="opacity-50">•</span>
                           <span>
-                            {project.updated_at ? "JUST NOW" : "YESTERDAY"}
+                            {project.updated_at ? "刚刚" : "昨天"}
                           </span>
                         </div>
                       </div>
@@ -375,11 +386,11 @@ export function ProjectList({
               }
             />
             <div
-              className="fixed z-50 glass-card py-1.5 min-w-[180px] overflow-hidden"
+              className="fixed z-50 glass rounded-[1.5rem] border border-(--glass-border) py-1.5 min-w-[200px] overflow-hidden"
               style={{
                 top: contextMenu.position.y,
                 left: contextMenu.position.x,
-                boxShadow: "0 8px 32px rgba(74, 69, 60, 0.15)",
+                boxShadow: "0 12px 40px rgba(74, 69, 60, 0.12)",
               }}
             >
               <button

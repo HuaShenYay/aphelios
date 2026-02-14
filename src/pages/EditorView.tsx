@@ -95,18 +95,24 @@ export function EditorView({
   // Initialize scenes from structure
   useEffect(() => {
     if (structure) {
-      // Flatten scenes from all chapters
-      const allScenes: Scene[] = []
-      structure.chapters.forEach(chapter => {
-        chapter.scenes.forEach(scene => {
-          allScenes.push({
-            ...scene,
-            title: scene.title
+      let allScenes: Scene[] = []
+      
+      if (structure.chapters && structure.chapters.length > 0) {
+        // Handle nested structure
+        structure.chapters.forEach(chapter => {
+          chapter.scenes.forEach(scene => {
+            allScenes.push({
+              ...scene,
+              title: scene.title
+            })
           })
         })
-      })
+      } else if (structure.scenes) {
+        // Handle flat structure
+        allScenes = [...structure.scenes]
+      }
       
-      // Sort by order
+      // Sort by order/name
       allScenes.sort((a, b) => a.order - b.order)
       setScenes(allScenes)
       
@@ -269,26 +275,32 @@ export function EditorView({
       <WindowManager title={project.name} />
       
       <div className="h-screen pt-9 gradient-bg relative overflow-hidden">
-        {/* Floating Sidebar Card */}
+        {/* Floating Sidebar - Now truly floating/hovering */}
         <div 
-          className={`absolute left-4 top-4 bottom-4 glass-card transition-all duration-300 ease-in-out flex flex-col ${
-            sidebarCollapsed ? 'w-12' : 'w-72'
+          className={`fixed left-4 top-13 bottom-4 glass-card transition-all duration-500 ease-in-out flex flex-col z-50 ${
+            sidebarCollapsed ? 'w-12 -translate-x-full opacity-0' : 'w-64 opacity-100 shadow-2xl'
           }`}
-          style={{ zIndex: 20 }}
         >
-          {/* Collapse Button - Right Edge */}
+          {/* Collapse Button - Repositioned for floating sidebar */}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-12 bg-[var(--novel-bg-paper)] border border-[var(--novel-border)] rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all z-30"
+            className="fixed left-4 top-13 w-10 h-10 bg-white/50 backdrop-blur-md border border-white/20 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all z-40 group"
+            style={{ 
+              opacity: sidebarCollapsed ? 1 : 0,
+              pointerEvents: sidebarCollapsed ? 'auto' : 'none',
+              left: sidebarCollapsed ? '1rem' : '17rem'
+            }}
           >
             <svg 
-              className={`w-3 h-3 text-[var(--novel-text-muted)] transition-transform duration-300 ${
+              className={`w-4 h-4 text-(--novel-text-muted) transition-transform duration-500 ${
                 sidebarCollapsed ? 'rotate-180' : ''
               }`} 
               viewBox="0 0 24 24" 
-              fill="currentColor"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
             >
-              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+              <path d="M9 18l6-6-6-6"/>
             </svg>
           </button>
           
@@ -297,7 +309,7 @@ export function EditorView({
             {/* Back Button */}
             <button
               onClick={onBack}
-              className={`flex items-center gap-2 text-[var(--novel-text-muted)] hover:text-[var(--novel-text-main)] transition-colors ${
+              className={`flex items-center gap-2 text-(--novel-text-muted) hover:text-(--novel-text-main) transition-colors ${
                 sidebarCollapsed ? 'justify-center w-8 h-8' : 'mb-4'
               }`}
               title="返回项目列表"
@@ -309,14 +321,14 @@ export function EditorView({
             {!sidebarCollapsed && (
               <>
                 {/* Project Title */}
-                <h2 className="font-serif text-lg font-medium text-[var(--novel-text-main)] mb-4 truncate">
+                <h2 className="font-serif text-lg font-medium text-(--novel-text-main) mb-4 truncate">
                   {project.name}
                 </h2>
                 
                 {/* Create Scene Button */}
                 <button
                   onClick={() => setShowCreateScene(true)}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium mb-4 transition-all hover:brightness-110"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-(--field-radius) text-sm font-medium mb-4 transition-all hover:brightness-110"
                   style={{
                     background: 'var(--accent)',
                     color: 'var(--accent-foreground)'
@@ -344,10 +356,10 @@ export function EditorView({
                 </div>
                 
                 {/* Total Word Count */}
-                <div className="mt-4 pt-4 border-t border-[var(--novel-border)]">
+                <div className="mt-4 pt-4 border-t border-(--novel-border)">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-[var(--novel-text-muted)]">总字数</span>
-                    <span className="font-medium text-[var(--novel-text-main)]">
+                    <span className="text-(--novel-text-muted)">总字数</span>
+                    <span className="font-medium text-(--novel-text-main)">
                       {totalWordCount.toLocaleString()}
                     </span>
                   </div>
@@ -357,50 +369,52 @@ export function EditorView({
           </div>
         </div>
         
-        {/* Main Editor Area */}
+        {/* Immersive Main Editor Area */}
         <main 
-          className="h-full overflow-hidden transition-all duration-300"
+          className="h-full overflow-hidden transition-all duration-500"
           style={{ 
-            marginLeft: sidebarCollapsed ? '80px' : '320px',
-            marginRight: '16px'
+            marginLeft: 0,
+            marginRight: 0
           }}
         >
-          <div className="h-full flex flex-col py-4">
-            {/* Chapter Title */}
+          <div className="h-full flex flex-col">
+            {/* Editor Container - Now Borderless and Fullscreen */}
             {selectedScene ? (
-              <div className="flex flex-col items-center mb-6 shrink-0">
-                <div className="text-sm text-[var(--novel-text-muted)] mb-2">
-                  第 {getChapterNumber(selectedScene)} 章
+              <div className="flex-1 overflow-hidden min-h-0 milkyway-container flex flex-col">
+                {/* Unified Document Header */}
+                <div className="flex flex-col items-center pt-16 pb-8 shrink-0">
+                  <div className="text-sm text-(--novel-text-muted) mb-2 opacity-60">
+                    第 {getChapterNumber(selectedScene)} 章
+                  </div>
+                  <EditableTitle 
+                    title={selectedScene.title}
+                    onSave={(newTitle) => handleRenameScene(selectedScene, newTitle)}
+                  />
+                  <div className="text-xs text-(--novel-text-muted) mt-2 opacity-50">
+                    {wordCount.toLocaleString()} 字
+                  </div>
                 </div>
-                <EditableTitle 
-                  title={selectedScene.title}
-                  onSave={(newTitle) => handleRenameScene(selectedScene, newTitle)}
-                />
-                <div className="text-xs text-[var(--novel-text-muted)] mt-1">
-                  {wordCount.toLocaleString()} 字
+
+                <div className="flex-1 overflow-y-auto">
+                  <div className="max-w-[800px] mx-auto min-h-full">
+                    <MilkdownProvider>
+                      <MilkdownEditor 
+                        content={sceneContent}
+                        onChange={handleContentChange}
+                        fontSize={fontSize}
+                        lineHeight={lineHeight}
+                      />
+                    </MilkdownProvider>
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-[var(--novel-text-muted)]">
-                <div className="w-16 h-16 rounded-2xl bg-[var(--novel-text-muted)]/10 flex items-center justify-center mb-4">
+              <div className="flex flex-col items-center justify-center h-full text-(--novel-text-muted)">
+                <div className="w-16 h-16 rounded-(--radius) bg-(--novel-text-muted)/10 flex items-center justify-center mb-4">
                   {Icons.file()}
                 </div>
                 <p className="text-lg font-medium mb-2">选择一个章节开始写作</p>
                 <p className="text-sm">或创建新章节</p>
-              </div>
-            )}
-            
-            {/* Editor Container */}
-            {selectedScene && (
-              <div className="flex-1 bg-white rounded-2xl shadow-sm overflow-hidden min-h-0">
-                <MilkdownProvider>
-                  <MilkdownEditor 
-                    content={sceneContent}
-                    onChange={handleContentChange}
-                    fontSize={fontSize}
-                    lineHeight={lineHeight}
-                  />
-                </MilkdownProvider>
               </div>
             )}
           </div>
@@ -411,40 +425,40 @@ export function EditorView({
           <div className="glass-card px-4 py-2 flex items-center gap-4">
             {/* Word Count */}
             <div className="flex items-center gap-2 text-sm">
-              <span className="text-[var(--novel-text-muted)]">字数</span>
-              <span className="font-medium text-[var(--novel-text-main)]">
+              <span className="text-(--novel-text-muted)">字数</span>
+              <span className="font-medium text-(--novel-text-main)">
                 {wordCount.toLocaleString()}
               </span>
             </div>
             
-            <div className="w-px h-4 bg-[var(--novel-border)]" />
+            <div className="w-px h-4 bg-(--novel-border)" />
             
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="flex items-center gap-1.5 text-sm text-[var(--novel-text-muted)] hover:text-[var(--novel-text-main)] transition-colors"
+              className="flex items-center gap-1.5 text-sm text-(--novel-text-muted) hover:text-(--novel-text-main) transition-colors"
             >
               {theme === 'dark' ? Icons.light() : Icons.dark()}
               <span className="hidden sm:inline">{theme === 'dark' ? '浅色' : '深色'}</span>
             </button>
             
-            <div className="w-px h-4 bg-[var(--novel-border)]" />
+            <div className="w-px h-4 bg-(--novel-border)" />
             
             {/* Export Button */}
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 text-sm text-[var(--novel-text-muted)] hover:text-[var(--novel-text-main)] transition-colors"
+              className="flex items-center gap-1.5 text-sm text-(--novel-text-muted) hover:text-(--novel-text-main) transition-colors"
             >
               {Icons.share()}
               <span className="hidden sm:inline">导出</span>
             </button>
             
-            <div className="w-px h-4 bg-[var(--novel-border)]" />
+            <div className="w-px h-4 bg-(--novel-border)" />
             
             {/* Save Status */}
             <div className="flex items-center gap-2">
               <div className={`status-dot ${saveStatus === 'saving' ? 'saving' : ''}`} />
-              <span className="text-xs text-[var(--novel-text-muted)]">
+              <span className="text-xs text-(--novel-text-muted)">
                 {saveStatus === 'saved' ? '已保存' : saveStatus === 'saving' ? '保存中...' : '未保存'}
               </span>
             </div>
@@ -461,7 +475,7 @@ export function EditorView({
             />
             <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-96">
               <div className="glass-card p-6" style={{ boxShadow: '0 24px 48px rgba(74, 69, 60, 0.2)' }}>
-                <h3 className="font-semibold text-lg mb-4 text-[var(--novel-text-main)]">
+                <h3 className="font-semibold text-lg mb-4 text-(--novel-text-main)">
                   新建章节
                 </h3>
                 <Input
@@ -525,9 +539,9 @@ function SceneListItem({ scene, chapterNumber, isSelected, onSelect, onRename, o
   
   return (
     <div
-      className={`group flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
+      className={`group flex items-center gap-2 px-3 py-2.5 rounded-(--field-radius) cursor-pointer transition-all ${
         isSelected 
-          ? 'bg-[var(--accent)]/10' 
+          ? 'bg-(--accent)/10' 
           : 'hover:bg-black/5'
       }`}
       onClick={onSelect}
@@ -543,14 +557,14 @@ function SceneListItem({ scene, chapterNumber, isSelected, onSelect, onRename, o
           onChange={(e) => setEditTitle(e.target.value)}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
-          className="flex-1 text-sm bg-white/50 border border-[var(--novel-border)] rounded px-2 py-1 outline-none focus:border-[var(--accent)]"
+          className="flex-1 text-sm bg-white/50 border border-(--novel-border) rounded px-2 py-1 outline-none focus:border-(--accent)"
           autoFocus
           onClick={(e) => e.stopPropagation()}
         />
       ) : (
         <>
           <span className={`flex-1 text-sm truncate ${
-            isSelected ? 'text-[var(--novel-text-main)] font-medium' : 'text-[var(--novel-text-muted)]'
+            isSelected ? 'text-(--novel-text-main) font-medium' : 'text-(--novel-text-muted)'
           }`}>
             {scene.title}
           </span>
@@ -562,7 +576,7 @@ function SceneListItem({ scene, chapterNumber, isSelected, onSelect, onRename, o
                 e.stopPropagation()
                 setIsEditing(true)
               }}
-              className="p-1 rounded hover:bg-black/10 text-[var(--novel-text-muted)]"
+              className="p-1 rounded hover:bg-black/10 text-(--novel-text-muted)"
             >
               {Icons.edit()}
             </button>
@@ -620,7 +634,7 @@ function EditableTitle({ title, onSave }: EditableTitleProps) {
         onChange={(e) => setEditTitle(e.target.value)}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
-        className="text-2xl font-serif font-medium text-center bg-transparent border-b-2 border-[var(--accent)] outline-none px-4 py-1 text-[var(--novel-text-main)]"
+        className="text-2xl font-serif font-medium text-center bg-transparent border-b-2 border-(--accent) outline-none px-4 py-1 text-(--novel-text-main)"
         autoFocus
       />
     )
@@ -629,7 +643,7 @@ function EditableTitle({ title, onSave }: EditableTitleProps) {
   return (
     <h1 
       onClick={() => setIsEditing(true)}
-      className="text-2xl font-serif font-medium text-center text-[var(--novel-text-main)] cursor-pointer hover:text-[var(--accent)] transition-colors px-4 py-1"
+      className="text-2xl font-serif font-medium text-center text-(--novel-text-main) cursor-pointer hover:text-(--accent) transition-colors px-4 py-1"
     >
       {title}
     </h1>

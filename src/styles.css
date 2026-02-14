@@ -73,9 +73,9 @@
     --glass-border: rgba(122, 107, 79, 0.12);
     --glass-border-light: rgba(255, 255, 255, 0.5);
 
-    /* Border Radius */
-    --radius: 0.75rem;
-    --field-radius: 0.5rem;
+    /* Border Radius - Unified Bold Style */
+    --radius: 2rem;
+    --field-radius: 1rem;
 
     /* Font Family - HarmonyOS Sans SC */
     --font-sans:
@@ -151,12 +151,13 @@
     --segment-foreground: var(--novel-text-main);
 
     /* Glass Effect */
-    --glass-bg: rgba(37, 34, 29, 0.85);
-    --glass-border: rgba(166, 139, 106, 0.2);
+    --glass-bg: rgba(30, 28, 24, 0.65);
+    --glass-border: rgba(166, 139, 106, 0.12);
+    --glass-border-light: rgba(255, 255, 255, 0.03);
 
-    /* Border Radius */
-    --radius: 0.5rem;
-    --field-radius: 0.75rem;
+    /* Border Radius - Unified with Light Mode */
+    --radius: 2rem;
+    --field-radius: 1rem;
 
     /* Font Family - HarmonyOS Sans SC */
     --font-sans:
@@ -167,10 +168,10 @@
     --spacing: 0.25rem;
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
-    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
-    --shadow-lg:
-      0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.4);
+    --shadow-card: 0 20px 40px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -217,11 +218,11 @@ button, a, .cursor-pointer, [role="button"], .project-card {
 /* Glass Sidebar - Enhanced with frosted glass effect */
 /* Glass Sidebar - Enhanced with frosted glass effect */
 .glass-sidebar {
-  background: var(--glass-bg-sidebar);
+  background: var(--novel-bg-sidebar);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-right: 1px solid rgba(0, 0, 0, 0.03);
-  box-shadow: 4px 0 24px rgba(74, 69, 60, 0.02);
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 4px 0 32px rgba(74, 69, 60, 0.03);
 }
 
 .dark .glass-sidebar {
@@ -252,27 +253,28 @@ button, a, .cursor-pointer, [role="button"], .project-card {
   position: absolute;
   inset: 0;
   background: 
-    radial-gradient(circle at 10% 20%, rgba(200, 180, 150, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(100, 140, 140, 0.1) 0%, transparent 40%);
+    radial-gradient(circle at 15% 15%, rgba(200, 180, 150, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 85% 85%, rgba(100, 140, 140, 0.08) 0%, transparent 50%);
   pointer-events: none;
 }
 
 /* Glass Card Effect */
 /* Glass Card Effect */
 .glass-card {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 9999px; /* Pill shape for header elements */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  background: var(--glass-bg);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.05);
 }
 
 .white-card {
     background: #FFFFFF;
-    border-radius: 1.5rem;
+    border-radius: var(--radius);
     padding: 1.25rem;
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02), 0 20px 40px rgba(74, 69, 60, 0.05);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
 }
 
 .white-card:hover {
@@ -286,11 +288,9 @@ button, a, .cursor-pointer, [role="button"], .project-card {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 0.75rem;
+  border-radius: 0.875rem;
   overflow: hidden;
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
 }
 
 body {
@@ -379,10 +379,10 @@ html {
 /* Book Cover Frame */
 .book-cover-frame {
   aspect-ratio: 3/4;
-  border-radius: 1.5rem;
+  border-radius: var(--radius);
   padding: 0.75rem;
   background: white;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .book-cover-frame img {
@@ -534,24 +534,49 @@ html {
 
 /* Window Manager Styles - Fixed title bar */
 [data-theme="dark"] .fixed.top-0 {
-  background: var(--novel-bg-cream);
+  background: var(--novel-bg-cream) !important;
+}
+
+.dark .glass {
+  background: rgba(37, 34, 29, 0.7) !important;
+  border-color: rgba(166, 139, 106, 0.15) !important;
+}
+
+.dark .glass-card {
+  background: rgba(37, 34, 29, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
 /* Milkdown Customization */
+.milkyway-container {
+  background-color: var(--novel-bg-paper) !important;
+  color: var(--novel-text-main);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 24px rgba(74, 69, 60, 0.03), 0 1px 2px rgba(74, 69, 60, 0.02);
+}
+
 .milkyway {
-  --editor-background: var(--novel-bg-paper) !important;
+  --editor-background: transparent !important;
+  background-color: transparent !important;
 }
 
 .milkyway .editor {
-  padding: 2rem 4rem !important;
-  font-family: "Source Serif 4", Georgia, serif;
-  line-height: 1.9 !important;
-  font-size: 1.125rem;
+  padding: 0 4rem 4rem !important; /* Title is now outside Milkdown but inside container */
+  max-width: 800px !important;
+  margin: 0 auto !important;
+  background-color: transparent !important;
+}
+
+/* Force Milkdown internal components to be transparent */
+.milkdown, .milkdown-editor, .crepe-editor {
+  background: transparent !important;
 }
 
 .milkyway .ProseMirror {
-  min-height: calc(100vh - 300px);
-  color: var(--novel-text-main);
+  min-height: calc(100vh - 400px);
+  color: var(--novel-text-main) !important;
+  background: transparent !important;
 }
 
 .milkyway .ProseMirror:focus {
@@ -564,15 +589,13 @@ html {
 
 /* Milkdown Dark Mode */
 [data-theme="dark"] .milkyway {
-  --editor-background: var(--novel-bg-paper) !important;
+  background-color: var(--novel-bg-paper) !important;
+  color: var(--novel-text-main);
 }
 
 [data-theme="dark"] .milkyway .ProseMirror {
   color: var(--novel-text-main);
-}
-
-[data-theme="dark"] .milkyway .ProseMirror p {
-  color: var(--novel-text-main);
+  background: transparent !important;
 }
 
 [data-theme="dark"] .milkyway .ProseMirror h1,
@@ -625,36 +648,111 @@ html {
   opacity: 0.5;
 }
 
-/* Range Input Custom Styles */
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--border);
-  outline: none;
+/* Milkdown Crepe UI - Aggressive Glassmorphism & Localization */
+/* We target .crepe-floating and specific menu classes directly to handle Portals */
+
+.crepe-floating,
+.crepe-slash-menu,
+.crepe-bubble-menu {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(32px) !important;
+  -webkit-backdrop-filter: blur(32px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15) !important;
+  padding: 8px !important;
+  color: var(--novel-text-main) !important;
 }
 
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--novel-text-main);
-  cursor: pointer;
-  transition: transform 0.15s ease;
+[data-theme="dark"] .crepe-floating,
+[data-theme="dark"] .crepe-slash-menu,
+[data-theme="dark"] .crepe-bubble-menu {
+  background: rgba(30, 28, 24, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5) !important;
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
+/* Button & Item Styling */
+.crepe-floating button,
+.crepe-slash-menu-item,
+.crepe-bubble-menu-button {
+  border-radius: 0.75rem !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  padding: 8px 12px !important;
 }
 
-input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--novel-text-main);
-  cursor: pointer;
-  border: none;
+.crepe-floating button:hover,
+.crepe-slash-menu-item:hover,
+.crepe-bubble-menu-button:hover {
+  background-color: rgba(107, 127, 127, 0.1) !important;
+}
+
+[data-theme="dark"] .crepe-floating button:hover,
+[data-theme="dark"] .crepe-slash-menu-item:hover,
+[data-theme="dark"] .crepe-bubble-menu-button:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Localization for Slash Menu Header Labels */
+.crepe-slash-menu-group-label {
+  font-size: 0 !important;
+  padding: 8px 12px 4px !important;
+  opacity: 0.6;
+}
+
+.crepe-slash-menu-group-label::after {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--novel-text-muted);
+}
+
+.crepe-slash-menu [data-category="Text"] .crepe-slash-menu-group-label::after { content: "基础文本"; }
+.crepe-slash-menu [data-category="List"] .crepe-slash-menu-group-label::after { content: "列表布局"; }
+.crepe-slash-menu [data-category="Advanced"] .crepe-slash-menu-group-label::after { content: "高级组件"; }
+
+/* Localization for Menu Item Labels */
+.crepe-slash-menu-item .label {
+  font-size: 14px !important;
+}
+
+.crepe-slash-menu-item[data-id="h1"] .label { font-size: 0 !important; }
+.crepe-slash-menu-item[data-id="h1"] .label::after { content: "一级标题"; font-size: 14px; }
+.crepe-slash-menu-item[data-id="h2"] .label { font-size: 0 !important; }
+.crepe-slash-menu-item[data-id="h2"] .label::after { content: "二级标题"; font-size: 14px; }
+.crepe-slash-menu-item[data-id="h3"] .label { font-size: 0 !important; }
+.crepe-slash-menu-item[data-id="h3"] .label::after { content: "三级标题"; font-size: 14px; }
+.crepe-slash-menu-item[data-id="text"] .label { font-size: 0 !important; }
+.crepe-slash-menu-item[data-id="text"] .label::after { content: "正文段落"; font-size: 14px; }
+.crepe-slash-menu-item[data-id="bullet_list"] .label { font-size: 0 !important; }
+.crepe-slash-menu-item[data-id="bullet_list"] .label::after { content: "圆点列表"; font-size: 14px; }
+.crepe-slash-menu-item[data-id="ordered_list"] .label { font-size: 0 !important; }
+.crepe-slash-menu-item[data-id="ordered_list"] .label::after { content: "数字列表"; font-size: 14px; }
+.crepe-slash-menu-item[data-id="blockquote"] .label { font-size: 0 !important; }
+.crepe-slash-menu-item[data-id="blockquote"] .label::after { content: "引用段落"; font-size: 14px; }
+.crepe-slash-menu-item[data-id="hr"] .label { font-size: 0 !important; }
+.crepe-slash-menu-item[data-id="hr"] .label::after { content: "水平分割线"; font-size: 14px; }
+.crepe-slash-menu-item[data-id="code_block"] .label { font-size: 0 !important; }
+.crepe-slash-menu-item[data-id="code_block"] .label::after { content: "代码区块"; font-size: 14px; }
+.crepe-slash-menu-item[data-id="image"] .label { font-size: 0 !important; }
+.crepe-slash-menu-item[data-id="image"] .label::after { content: "上传图片"; font-size: 14px; }
+
+/* Home Page Dark Mode Enhancements */
+[data-theme="dark"] .gradient-bg {
+  background: radial-gradient(circle at 10% 20%, rgba(30, 28, 24, 1) 0%, rgba(20, 18, 15, 1) 100%);
+}
+
+[data-theme="dark"] .white-card {
+  background: var(--novel-bg-paper);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .white-card:hover {
+  background: var(--surface-secondary);
+  border-color: rgba(166, 139, 106, 0.2);
+}
+
+[data-theme="dark"] .book-cover-frame {
+  background: #2D2A24;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }

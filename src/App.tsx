@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { Button, Input, Modal } from "@heroui/react";
+import { Button, Input } from "@heroui/react";
 import { commands, Project, ProjectStructure } from "./types";
 import { ProjectList } from "./pages/ProjectList";
 import { EditorView } from "./pages/EditorView";
-import { Icons } from "./components/Icons";
+import { open } from "@tauri-apps/plugin-dialog";
 
 // Hooks
 function useTheme() {
@@ -35,7 +35,7 @@ function HeroModal({
   title,
   children,
   onConfirm,
-  confirmText = "Save",
+  confirmText = "保存",
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -44,31 +44,99 @@ function HeroModal({
   onConfirm: () => void;
   confirmText?: string;
 }) {
+  if (!isOpen) return null;
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm">
-      <div className="glass p-6 rounded-2xl">
-        <h3 className="font-serif font-semibold text-lg mb-4 text-[var(--foreground)]">
-          {title}
-        </h3>
-        <div className="mb-4">{children}</div>
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="light"
-            onPress={onClose}
-            className="text-[var(--novel-text-muted)]"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="flat"
-            onPress={onConfirm}
-            className="bg-[var(--accent)] text-white rounded-lg"
-          >
-            {confirmText}
-          </Button>
+    <>
+      <div 
+        className="fixed inset-0 z-100 bg-black/20 backdrop-blur-sm" 
+        onClick={onClose}
+      />
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-101 w-full max-w-sm px-4">
+        <div className="bg-white/95 backdrop-blur-md p-6 rounded-(--radius) shadow-2xl border border-white/50">
+          <h3 className="font-serif font-semibold text-lg mb-4 text-(--novel-text-main)">
+            {title}
+          </h3>
+          <div className="mb-6">{children}</div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              onPress={onClose}
+              className="text-(--novel-text-muted)"
+            >
+              取消
+            </Button>
+            <Button
+              onPress={onConfirm}
+              className="bg-(--novel-primary) text-white rounded-(--field-radius)"
+            >
+{/* ... */}
+              {confirmText}
+            </Button>
+          </div>
         </div>
       </div>
-    </Modal>
+    </>
+  );
+}
+
+function SettingsModal({
+  isOpen,
+  onClose,
+  theme,
+  toggleTheme,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  theme: string;
+  toggleTheme: () => void;
+}) {
+  if (!isOpen) return null;
+  return (
+    <>
+      <div 
+        className="fixed inset-0 z-100 bg-black/20 backdrop-blur-sm" 
+        onClick={onClose}
+      />
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-101 w-full max-w-sm px-4">
+        <div className="bg-white/95 backdrop-blur-md p-6 rounded-(--radius) shadow-2xl border border-white/50">
+          <h3 className="font-serif font-semibold text-lg mb-6 text-(--novel-text-main)">
+            系统设置
+          </h3>
+          
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-(--novel-text-main)">外观界面</p>
+                <p className="text-xs text-(--novel-text-muted)">切换深色或浅色模式</p>
+              </div>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onPress={toggleTheme}
+                className="bg-black/5 hover:bg-black/10 rounded-(--field-radius)"
+              >
+                {theme === "light" ? "🌙 深色" : "☀️ 浅色"}
+              </Button>
+            </div>
+
+            <div className="pt-4 border-t border-black/5">
+              <p className="text-xs text-center text-(--novel-text-muted)">
+                Aphelios Novel Editor v1.0.0
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex justify-end">
+            <Button
+              onPress={onClose}
+              className="bg-(--novel-primary) text-white rounded-xl px-8"
+            >
+              完成
+            </Button>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -80,24 +148,25 @@ function App() {
   const [projectStructure, setProjectStructure] =
     useState<ProjectStructure | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { theme, toggleTheme } = useTheme();
 
   // Project List Props
   const [activeTab, setActiveTab] = useState("projects");
   const newProjectModal = useModalState();
+  const settingsModal = useModalState();
   const [newProjectName, setNewProjectName] = useState("");
+  const [selectedFolderPath, setSelectedFolderPath] = useState("");
 
   // Editor Props (defaults)
-  const [fontSize, setFontSize] = useState(16);
-  const [lineHeight, setLineHeight] = useState(1.6);
+  const [fontSize] = useState(16);
+  const [lineHeight] = useState(1.6);
 
   const loadProjects = useCallback(async () => {
     try {
       setLoading(true);
       setProjects(await commands.listProjects());
     } catch (err) {
-      setError(String(err));
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -107,34 +176,33 @@ function App() {
     loadProjects();
   }, [loadProjects]);
 
+  const handleSelectFolder = async () => {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        title: "选择项目存储位置",
+      });
+      if (selected && typeof selected === "string") {
+        setSelectedFolderPath(selected);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleCreateProject = async () => {
     if (!newProjectName.trim()) return;
     try {
-      const project = await commands.createProject(newProjectName, ""); // folderPath is second arg in types, passing empty string or need handler?
-      // Wait, types.ts commands.createProject takes (name, folderPath).
-      // Use empty string if not used, or check if creating requires folder path selection?
-      // Assuming empty string is fine or handled by backend if not provided?
-      // Actually, looking at types.ts: invoke('create_project', { request: { name, folder_path: folderPath } })
-      // If folderPath is empty, backend might error or use default.
-      // Inline App.tsx (Step 222) called commands.createProject(newProjectName).
-      // Step 237 types.ts shows commands.createProject takes (name: string, folderPath: string).
-      // So inline App.tsx was seemingly using a version of createProject that took only one arg?
-      // Or maybe types.ts was updated and App.tsx was outdated.
-      // I'll pass "" for now as placeholder, or check if `createProject` in types.ts is strictly typed. Yes it is.
-      // I'll check how the previous App.tsx used it. Step 222 line 1096: `await commands.createProject(newProjectName);`
-      // This implies types.ts might have optional folderPath?
-      // Step 237 line 68: `createProject: (name: string, folderPath: string) =>`
-      // So previous App.tsx WAS failing type check or ignoring it.
-      // I'll pass "" to be safe.
-      
-      // Update: re-reading types.ts, it expects 2 args. 
+      const project = await commands.createProject(newProjectName, selectedFolderPath);
       
       newProjectModal.close();
       setNewProjectName("");
+      setSelectedFolderPath("");
       await loadProjects();
       handleSelectProject(project);
     } catch (err) {
-      setError(String(err));
+      console.error(err);
     }
   };
 
@@ -145,17 +213,17 @@ function App() {
       setProjectStructure(structure);
       setView("editor");
     } catch (err) {
-      setError(String(err));
+      console.error(err);
     }
   };
 
   const handleDeleteProject = async (projectPath: string) => {
-    if (!confirm("Delete this project?")) return;
+    if (!confirm("确定要删除这个项目吗？")) return;
     try {
       await commands.deleteProject(projectPath);
       await loadProjects();
     } catch (err) {
-      setError(String(err));
+      console.error(err);
     }
   };
 
@@ -171,7 +239,7 @@ function App() {
       await commands.toggleFavorite(project.path);
       await loadProjects();
     } catch (err) {
-      setError(String(err));
+      console.error(err);
     }
   };
 
@@ -180,7 +248,7 @@ function App() {
       await commands.renameProject(project.path, newName);
       await loadProjects();
     } catch (err) {
-      setError(String(err));
+      console.error(err);
     }
   };
 
@@ -195,7 +263,7 @@ function App() {
           loading={loading}
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          onOpenSettings={() => console.log("Settings clicked")}
+          onOpenSettings={settingsModal.open}
           onToggleFavorite={handleToggleFavorite}
           onEditProject={handleEditProject}
         />
@@ -214,16 +282,39 @@ function App() {
       <HeroModal
         isOpen={newProjectModal.isOpen}
         onClose={newProjectModal.close}
-        title="New Project"
+        title="新建项目"
         onConfirm={handleCreateProject}
       >
-        <Input
-          placeholder="Project name"
-          value={newProjectName}
-          onChange={(e) => setNewProjectName(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleCreateProject()}
-        />
+        <div className="space-y-4">
+          <Input
+            placeholder="项目名称"
+            value={newProjectName}
+            onChange={(e) => setNewProjectName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleCreateProject()}
+          />
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-(--novel-text-muted) ml-1">存储位置</p>
+            <div 
+              onClick={handleSelectFolder}
+              className="w-full px-4 py-3 rounded-(--field-radius) cursor-pointer transition-colors border border-black/5 flex items-center justify-between group"
+            >
+              <span className="text-sm text-(--novel-text-main) truncate max-w-[240px]">
+                {selectedFolderPath || "请选择存储文件夹..."}
+              </span>
+              <span className="text-xs text-(--novel-primary) font-medium group-hover:underline">
+                更改
+              </span>
+            </div>
+          </div>
+        </div>
       </HeroModal>
+
+      <SettingsModal 
+        isOpen={settingsModal.isOpen} 
+        onClose={settingsModal.close}
+        theme={theme}
+        toggleTheme={toggleTheme}
+      />
     </>
   );
 }

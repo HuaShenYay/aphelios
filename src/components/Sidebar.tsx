@@ -18,12 +18,12 @@ export function Sidebar({ onOpenSettings, activeTab, onTabChange }: SidebarProps
   // ]
 
   return (
-    <aside className="w-64 flex flex-col h-full glass-sidebar z-10 transition-colors duration-300">
+    <aside className="w-64 flex flex-col h-full glass-sidebar z-10 transition-all duration-300">
       <div className="p-6 flex-1">
         {/* Logo Section */}
         <div className="flex items-center gap-3 mb-10 pl-2">
           <div 
-            className="w-10 h-10 rounded-xl overflow-hidden shadow-sm"
+            className="w-10 h-10 rounded-(--field-radius) overflow-hidden shadow-sm"
             style={{ 
               boxShadow: '0 4px 12px rgba(122, 107, 79, 0.2)'
             }}
@@ -48,7 +48,7 @@ export function Sidebar({ onOpenSettings, activeTab, onTabChange }: SidebarProps
             <div
               key={item.id}
               onClick={() => onTabChange(item.id)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 text-sm font-medium ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-(--field-radius) cursor-pointer transition-all duration-200 text-sm font-medium ${
                 activeTab === item.id 
                   ? 'bg-white shadow-sm text-(--novel-text-main)' 
                   : 'text-(--novel-text-muted) hover:text-(--novel-text-main) hover:bg-black/5'
@@ -69,7 +69,7 @@ export function Sidebar({ onOpenSettings, activeTab, onTabChange }: SidebarProps
       <div className="p-4 mx-4 mb-4">
         <div 
           onClick={onOpenSettings}
-          className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-200 glass-card"
+          className="flex items-center gap-3 p-3 rounded-(--radius) cursor-pointer transition-all duration-200 glass-card"
           style={{ 
             background: 'rgba(250, 249, 246, 0.6)',
           }}

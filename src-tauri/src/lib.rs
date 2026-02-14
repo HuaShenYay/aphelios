@@ -107,14 +107,18 @@ fn write_project_metadata(project: &Project) -> Result<(), String> {
 fn scan_scenes_from_folder(folder_path: &str) -> Vec<Scene> {
     let folder = PathBuf::from(folder_path);
     if !folder.exists() || !folder.is_dir() {
+        log::error!("Folder not found or not a directory: {}", folder_path);
         return Vec::new();
     }
 
     let mut scenes: Vec<Scene> = Vec::new();
 
     if let Ok(entries) = fs::read_dir(&folder) {
-        for entry in entries.flatten() {
-            let path = entry.path();
+        let mut paths: Vec<_> = entries.flatten().map(|e| e.path()).collect();
+        // Stable sort by filename
+        paths.sort_by_key(|p| p.file_name().and_then(|n| n.to_str()).unwrap_or("").to_string());
+
+        for (idx, path) in paths.into_iter().enumerate() {
             if path.is_file() && path.extension().map_or(false, |ext| ext == "md") {
                 let file_name = path
                     .file_stem()
@@ -125,16 +129,42 @@ fn scan_scenes_from_folder(folder_path: &str) -> Vec<Scene> {
                 let scene = Scene {
                     id: path.to_string_lossy().to_string(),
                     title: file_name,
-                    order: scenes.len() as u32 + 1,
+                    order: (idx + 1) as u32,
                     file_path: path.to_string_lossy().to_string(),
                 };
                 scenes.push(scene);
             }
         }
+    } else {
+        log::error!("Failed to read directory: {}", folder_path);
     }
 
-    scenes.sort_by_key(|s| s.order);
     scenes
+}
+
+fn count_words(content: &str) -> u32 {
+    let mut count = 0;
+    let mut in_word = false;
+    for c in content.chars() {
+        if c.is_alphanumeric() {
+            // CJK characters are counted individually
+            if (c >= '\u{4e00}' && c <= '\u{9fff}') || 
+               (c >= '\u{3400}' && c <= '\u{4dbf}') ||
+               (c >= '\u{f900}' && c <= '\u{faff}') {
+                count += 1;
+                in_word = false;
+            } else {
+                // ASCII words are counted as one unit
+                if !in_word {
+                    count += 1;
+                    in_word = true;
+                }
+            }
+        } else {
+            in_word = false;
+        }
+    }
+    count
 }
 
 fn count_words_in_project(project: &Project) -> u32 {
@@ -145,8 +175,7 @@ fn count_words_in_project(project: &Project) -> u32 {
         let scene_path = PathBuf::from(&scene.file_path);
         if scene_path.exists() {
             if let Ok(content) = fs::read_to_string(&scene_path) {
-                let words = content.split_whitespace().count() as u32;
-                total_words += words;
+                total_words += count_words(&content);
             }
         }
     }
@@ -395,7 +424,7 @@ fn save_scene_content(scene_path: String, content: String) -> Result<u32, String
 
     fs::write(&path, &content).map_err(|e| e.to_string())?;
 
-    let word_count = content.split_whitespace().count() as u32;
+    let word_count = count_words(&content);
 
     let projects_dir = get_projects_dir();
     if let Ok(entries) = fs::read_dir(&projects_dir) {
