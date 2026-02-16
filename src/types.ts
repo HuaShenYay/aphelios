@@ -58,6 +58,15 @@ export interface SceneContent {
   word_count: number;
 }
 
+export interface TextStats {
+  word_count: number;              // 字数（中文字符 + 英文单词）
+  char_count: number;              // 字符数（不含空格）
+  char_count_with_spaces: number;  // 字符数（含空格）
+  paragraph_count: number;         // 段落数
+  line_count: number;              // 行数
+  reading_time_minutes: number;    // 预计阅读时间（分钟）
+}
+
 // Tauri Commands
 export const invoke = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> => {
   const { invoke: tauriInvoke } = await import('@tauri-apps/api/core');
@@ -70,6 +79,9 @@ export const commands = {
   
   listProjects: () => 
     invoke<Project[]>('list_projects'),
+
+  openPath: (path: string) =>
+    invoke<void>('open_path', { path }),
   
   getProjectStructure: (projectPath: string) => 
     invoke<ProjectStructure>('get_project_structure', { projectPath }),
@@ -115,4 +127,10 @@ export const commands = {
   
   toggleFavorite: (projectPath: string) => 
     invoke<Project>('toggle_favorite', { projectPath }),
+  
+  getTextStats: (content: string) => 
+    invoke<TextStats>('get_text_stats', { content }),
+  
+  getProjectStats: (projectPath: string) => 
+    invoke<TextStats>('get_project_stats', { projectPath }),
 };

@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button, Input } from "@heroui/react";
+import { open } from "@tauri-apps/plugin-dialog";
 import { commands, Project, ProjectStructure } from "./types";
 import { ProjectList } from "./pages/ProjectList";
 import { EditorView } from "./pages/EditorView";
-import { open } from "@tauri-apps/plugin-dialog";
+import { GlobalSettings } from "./components/GlobalSettings";
 
 // Hooks
 function useTheme() {
@@ -79,67 +80,6 @@ function HeroModal({
   );
 }
 
-function SettingsModal({
-  isOpen,
-  onClose,
-  theme,
-  toggleTheme,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  theme: string;
-  toggleTheme: () => void;
-}) {
-  if (!isOpen) return null;
-  return (
-    <>
-      <div 
-        className="fixed inset-0 z-100 bg-black/20 backdrop-blur-sm" 
-        onClick={onClose}
-      />
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-101 w-full max-w-sm px-4">
-        <div className="bg-white/95 backdrop-blur-md p-6 rounded-(--radius) shadow-2xl border border-white/50">
-          <h3 className="font-serif font-semibold text-lg mb-6 text-(--novel-text-main)">
-            系统设置
-          </h3>
-          
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-(--novel-text-main)">外观界面</p>
-                <p className="text-xs text-(--novel-text-muted)">切换深色或浅色模式</p>
-              </div>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                onPress={toggleTheme}
-                className="bg-black/5 hover:bg-black/10 rounded-(--field-radius)"
-              >
-                {theme === "light" ? "🌙 深色" : "☀️ 浅色"}
-              </Button>
-            </div>
-
-            <div className="pt-4 border-t border-black/5">
-              <p className="text-xs text-center text-(--novel-text-muted)">
-                Aphelios Novel Editor v1.0.0
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8 flex justify-end">
-            <Button
-              onPress={onClose}
-              className="bg-(--novel-primary) text-white rounded-xl px-8"
-            >
-              完成
-            </Button>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
 // Main App
 function App() {
   const [view, setView] = useState<"list" | "editor">("list");
@@ -157,9 +97,42 @@ function App() {
   const [newProjectName, setNewProjectName] = useState("");
   const [selectedFolderPath, setSelectedFolderPath] = useState("");
 
-  // Editor Props (defaults)
-  const [fontSize] = useState(16);
-  const [lineHeight] = useState(1.6);
+  // Editor Settings (with localStorage persistence)
+  const [fontSize, setFontSize] = useState(() => {
+    const saved = localStorage.getItem("fontSize");
+    return saved ? parseInt(saved) : 16;
+  });
+  const [lineHeight, setLineHeight] = useState(() => {
+    const saved = localStorage.getItem("lineHeight");
+    return saved ? parseFloat(saved) : 1.6;
+  });
+  const [autoSaveInterval, setAutoSaveInterval] = useState(() => {
+    const saved = localStorage.getItem("autoSaveInterval");
+    return saved ? parseInt(saved) : 10;
+  });
+  const [defaultFolder, setDefaultFolder] = useState(() => {
+    return localStorage.getItem("defaultFolder") || "";
+  });
+
+  // Save settings to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem("fontSize", fontSize.toString());
+  }, [fontSize]);
+
+  useEffect(() => {
+    localStorage.setItem("lineHeight", lineHeight.toString());
+  }, [lineHeight]);
+
+  useEffect(() => {
+    localStorage.setItem("autoSaveInterval", autoSaveInterval.toString());
+  }, [autoSaveInterval]);
+
+  // 当新建作品弹窗打开时，如果没有选择路径且有默认路径，则使用默认路径
+  useEffect(() => {
+    if (newProjectModal.isOpen && !selectedFolderPath && defaultFolder) {
+      setSelectedFolderPath(defaultFolder);
+    }
+  }, [newProjectModal.isOpen, defaultFolder, selectedFolderPath]);
 
   const loadProjects = useCallback(async () => {
     try {
@@ -181,7 +154,7 @@ function App() {
       const selected = await open({
         directory: true,
         multiple: false,
-        title: "选择项目存储位置",
+        title: "选择作品存储位置",
       });
       if (selected && typeof selected === "string") {
         setSelectedFolderPath(selected);
@@ -192,33 +165,50 @@ function App() {
   };
 
   const handleCreateProject = async () => {
-    if (!newProjectName.trim()) return;
+    if (!newProjectName.trim()) {
+      alert("请输入作品名称");
+      return;
+    }
+    if (!selectedFolderPath) {
+      alert("请选择存储文件夹");
+      return;
+    }
     try {
+      console.log("[创建作品] 开始创建:", newProjectName, "在:", selectedFolderPath);
       const project = await commands.createProject(newProjectName, selectedFolderPath);
+      console.log("[创建作品] 返回的project:", project);
       
       newProjectModal.close();
       setNewProjectName("");
       setSelectedFolderPath("");
+      
+      // 等待一下确保文件系统操作完成
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       await loadProjects();
+      console.log("[创建作品] 准备进入编辑器, project:", project);
       handleSelectProject(project);
     } catch (err) {
-      console.error(err);
+      console.error("[创建作品] 失败:", err);
+      alert(`创建失败: ${err}`);
     }
   };
 
   const handleSelectProject = async (project: Project) => {
     try {
+      console.log("[选择项目] 获取结构, path:", project.path, "folder:", project.folder_path);
       const structure = await commands.getProjectStructure(project.path);
+      console.log("[选择项目] 获取到的结构:", structure);
       setCurrentProject(project);
       setProjectStructure(structure);
       setView("editor");
     } catch (err) {
-      console.error(err);
+      console.error("[选择项目] 失败:", err);
     }
   };
 
   const handleDeleteProject = async (projectPath: string) => {
-    if (!confirm("确定要删除这个项目吗？")) return;
+    if (!confirm("确定要删除这个作品吗？")) return;
     try {
       await commands.deleteProject(projectPath);
       await loadProjects();
@@ -276,44 +266,69 @@ function App() {
           toggleTheme={toggleTheme}
           fontSize={fontSize}
           lineHeight={lineHeight}
+          autoSaveInterval={autoSaveInterval}
         />
       ) : null}
 
       <HeroModal
         isOpen={newProjectModal.isOpen}
-        onClose={newProjectModal.close}
-        title="新建项目"
+        onClose={() => {
+          newProjectModal.close();
+          setNewProjectName("");
+          setSelectedFolderPath("");
+        }}
+        title="新建作品"
         onConfirm={handleCreateProject}
+        confirmText="创建"
       >
-        <div className="space-y-4">
-          <Input
-            placeholder="项目名称"
-            value={newProjectName}
-            onChange={(e) => setNewProjectName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleCreateProject()}
-          />
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-(--novel-text-muted) ml-1">存储位置</p>
-            <div 
-              onClick={handleSelectFolder}
-              className="w-full px-4 py-3 rounded-(--field-radius) cursor-pointer transition-colors border border-black/5 flex items-center justify-between group"
-            >
-              <span className="text-sm text-(--novel-text-main) truncate max-w-[240px]">
-                {selectedFolderPath || "请选择存储文件夹..."}
-              </span>
-              <span className="text-xs text-(--novel-primary) font-medium group-hover:underline">
-                更改
-              </span>
+        <div className="space-y-5">
+          <div>
+            <label className="text-xs font-medium text-(--novel-text-muted) ml-1 block mb-2">作品名称</label>
+            <Input
+              placeholder="输入作品名称"
+              value={newProjectName}
+              onChange={(e) => setNewProjectName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleCreateProject()}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-(--novel-text-muted) ml-1 block mb-2">存储位置</label>
+            <div className="flex gap-2">
+              <div 
+                className="flex-1 px-4 py-3 rounded-xl cursor-pointer transition-colors flex items-center justify-between hover:bg-(--novel-primary)/5"
+                style={{ background: 'var(--surface-secondary)' }}
+                onClick={handleSelectFolder}
+              >
+                <span className="text-sm text-(--novel-text-muted) truncate max-w-[180px]">
+                  {selectedFolderPath || "请选择存储文件夹..."}
+                </span>
+              </div>
+              <Button
+                variant="secondary"
+                onPress={handleSelectFolder}
+                className="bg-(--accent)/10 text-(--accent) rounded-xl"
+              >
+                选择
+              </Button>
             </div>
           </div>
         </div>
       </HeroModal>
 
-      <SettingsModal 
+      <GlobalSettings 
         isOpen={settingsModal.isOpen} 
         onClose={settingsModal.close}
         theme={theme}
         toggleTheme={toggleTheme}
+        fontSize={fontSize}
+        setFontSize={setFontSize}
+        lineHeight={lineHeight}
+        setLineHeight={setLineHeight}
+        autoSaveInterval={autoSaveInterval}
+        setAutoSaveInterval={setAutoSaveInterval}
+        defaultFolder={defaultFolder}
+        setDefaultFolder={setDefaultFolder}
       />
     </>
   );

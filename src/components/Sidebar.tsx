@@ -8,7 +8,7 @@ interface SidebarProps {
 
 export function Sidebar({ onOpenSettings, activeTab, onTabChange }: SidebarProps) {
   const navItems = [
-    { id: 'projects', label: '全部项目', icon: Icons.grid },
+    { id: 'projects', label: '全部作品', icon: Icons.grid },
   ]
   
   // Workspace items - future feature

@@ -30,6 +30,13 @@
     "dialog:allow-open",
     "dialog:allow-save",
     "shell:default",
-    "shell:allow-open"
+    {
+      "identifier": "shell:allow-open",
+      "allow": [
+        {
+          "href": "^.*$"
+        }
+      ]
+    }
   ]
 }

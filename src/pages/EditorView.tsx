@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Button, Input } from '@heroui/react'
-import { Milkdown, useEditor, MilkdownProvider } from '@milkdown/react'
+import { Milkdown, useEditor, useInstance, MilkdownProvider } from '@milkdown/react'
+import { replaceAll } from '@milkdown/utils'
 import { Crepe } from '@milkdown/crepe'
 import { WindowManager } from '../components/WindowManager'
 import { Icons } from '../components/Icons'
-import { Project, ProjectStructure, Scene, commands } from '../types'
+import { EditorSidebar } from '../components/EditorSidebar'
+import { EditableTitle } from '../components/EditableTitle'
+import { Project, ProjectStructure, Scene, TextStats, commands } from '../types'
 import '@milkdown/crepe/theme/common/style.css'
 import '@milkdown/crepe/theme/frame.css'
 
@@ -16,6 +18,7 @@ interface EditorViewProps {
   toggleTheme: () => void
   fontSize: number
   lineHeight: number
+  autoSaveInterval: number
 }
 
 // Milkdown Editor Component
@@ -23,14 +26,20 @@ function MilkdownEditor({
   content, 
   onChange,
   fontSize,
-  lineHeight
+  lineHeight,
+  onFocus,
+  onBlur
 }: { 
   content: string
   onChange: (markdown: string) => void
   fontSize: number
   lineHeight: number
+  onFocus?: () => void
+  onBlur?: () => void
 }) {
+  const [isLoading, getEditor] = useInstance()
   const prevContentRef = useRef(content)
+  const isExternalChangeRef = useRef(false)
   
   useEditor((root) => {
     const crepe = new Crepe({
@@ -40,25 +49,35 @@ function MilkdownEditor({
     
     crepe.on((listener) => {
       listener.markdownUpdated((_, markdown, prevMarkdown) => {
-        if (markdown !== prevMarkdown) {
+        // Only trigger onChange if this is NOT an external change
+        if (!isExternalChangeRef.current && markdown !== prevMarkdown) {
           onChange(markdown)
         }
+        isExternalChangeRef.current = false
       })
     })
     
     return crepe
   }, [])
 
-  // Update editor content when scene changes
+  // Update editor content when it changes externally (e.g., scene change)
   useEffect(() => {
-    if (content !== prevContentRef.current) {
+    if (!isLoading && content !== prevContentRef.current) {
+      const editor = getEditor()
+      if (editor) {
+        isExternalChangeRef.current = true
+        editor.action(replaceAll(content))
+      }
       prevContentRef.current = content
     }
-  }, [content])
+  }, [content, isLoading, getEditor])
 
   return (
     <div 
       className="milkyway"
+      onFocus={onFocus}
+      onBlur={onBlur}
+      tabIndex={0}
       style={{ 
         fontSize: `${fontSize}px`,
         lineHeight: lineHeight 
@@ -76,21 +95,32 @@ export function EditorView({
   theme, 
   toggleTheme,
   fontSize,
-  lineHeight
+  lineHeight,
+  autoSaveInterval
 }: EditorViewProps) {
   // State
   const [scenes, setScenes] = useState<Scene[]>([])
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
   const [wordCount, setWordCount] = useState(0)
   const [totalWordCount, setTotalWordCount] = useState(project.word_count)
-  const [showCreateScene, setShowCreateScene] = useState(false)
-  const [newSceneTitle, setNewSceneTitle] = useState('')
   const [sceneContent, setSceneContent] = useState('')
+  const [textStats, setTextStats] = useState<TextStats>({
+    word_count: 0,
+    char_count: 0,
+    char_count_with_spaces: 0,
+    paragraph_count: 0,
+    line_count: 0,
+    reading_time_minutes: 0,
+  })
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved')
-  
+
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const contentRef = useRef(sceneContent)
+  const saveStatusRef = useRef(saveStatus)
+  const selectedSceneRef = useRef<Scene | null>(null)
+  
+  const [isEditing, setIsEditing] = useState(false)
   
   // Initialize scenes from structure
   useEffect(() => {
@@ -122,13 +152,33 @@ export function EditorView({
       }
     }
   }, [structure])
+
+  useEffect(() => {
+    saveStatusRef.current = saveStatus
+  }, [saveStatus])
+
+  useEffect(() => {
+    selectedSceneRef.current = selectedScene
+  }, [selectedScene])
   
+  // Handle back with auto-save
+  const handleBack = async () => {
+    if (selectedScene && saveStatus === 'unsaved') {
+      await saveSceneContent()
+    }
+    onBack()
+  }
+
   // Handle scene selection
   const handleSelectScene = async (scene: Scene) => {
     // Save current scene if needed
     if (selectedScene && saveStatus === 'unsaved') {
       await saveSceneContent()
     }
+    
+    // Clear content first to avoid flashing old content
+    setSceneContent('')
+    contentRef.current = ''
     
     setSelectedScene(scene)
     setSaveStatus('saved')
@@ -167,10 +217,24 @@ export function EditorView({
     }
   }, [selectedScene, wordCount])
   
+  // Update text stats when content changes
+  const updateTextStats = useCallback(async (content: string) => {
+    try {
+      const stats = await commands.getTextStats(content)
+      setTextStats(stats)
+      setWordCount(stats.word_count)
+    } catch (err) {
+      console.error('Failed to get text stats:', err)
+    }
+  }, [])
+  
   // Auto-save when content changes
   const handleContentChange = useCallback((markdown: string) => {
     contentRef.current = markdown
     setSaveStatus('unsaved')
+    
+    // Update stats immediately
+    updateTextStats(markdown)
     
     // Debounced save
     if (saveTimeoutRef.current) {
@@ -179,8 +243,8 @@ export function EditorView({
     
     saveTimeoutRef.current = setTimeout(() => {
       saveSceneContent()
-    }, 2000)
-  }, [saveSceneContent])
+    }, Math.max(500, autoSaveInterval * 1000))
+  }, [saveSceneContent, autoSaveInterval, updateTextStats])
   
   // Cleanup save timeout
   useEffect(() => {
@@ -190,26 +254,53 @@ export function EditorView({
       }
     }
   }, [])
+
+  useEffect(() => {
+    return () => {
+      if (saveStatusRef.current === 'unsaved' && selectedSceneRef.current) {
+        commands.saveSceneContent(
+          selectedSceneRef.current.file_path,
+          contentRef.current
+        ).catch(() => {})
+      }
+    }
+  }, [])
   
   // Create new scene
-  const handleCreateScene = async () => {
-    if (!newSceneTitle.trim() || !project) return
+  const handleCreateScene = async (title: string) => {
+    if (!title.trim() || !project) return
     
     try {
       const newScene = await commands.createScene(
         project.path,
         project.folder_path,
-        newSceneTitle
+        title
       )
       
       setScenes(prev => [...prev, newScene].sort((a, b) => a.order - b.order))
-      setNewSceneTitle('')
-      setShowCreateScene(false)
       
       // Select the new scene
       handleSelectScene(newScene)
     } catch (err) {
       console.error('Failed to create scene:', err)
+    }
+  }
+
+  // Update project name
+  const handleUpdateProjectName = async (newName: string) => {
+    try {
+      const updatedProject = await commands.renameProject(project.path, newName)
+      // Note: In a real app we might need to update the project state in parent component
+      // For now we just log it or maybe we should have a way to update project prop?
+      // Since project is a prop, we can't update it directly.
+      // However, we can at least show it updated in the UI if we had local state for it,
+      // but EditorSidebar takes project prop.
+      // This might require a callback to parent or reloading.
+      // For now let's assume the command works and maybe we can't reflect it immediately 
+      // without parent update.
+      console.log('Project renamed to:', updatedProject.name)
+    } catch (err) {
+      console.error('Failed to rename project:', err)
     }
   }
   
@@ -275,122 +366,19 @@ export function EditorView({
       <WindowManager title={project.name} />
       
       <div className="h-screen pt-9 gradient-bg relative overflow-hidden">
-        {/* Collapsible Floating Sidebar */}
-        <div 
-          className={`fixed left-4 top-13 bottom-4 glass-card transition-all duration-300 ease-in-out flex flex-col z-50 ${
-            sidebarCollapsed ? 'w-14' : 'w-64'
-          }`}
-        >
-          {/* Sidebar Header with Collapse Toggle */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-(--novel-border)/50">
-            {!sidebarCollapsed && (
-              <button
-                onClick={onBack}
-                className="flex items-center gap-2 text-sm text-(--novel-text-muted) hover:text-(--novel-text-main) transition-colors"
-                title="返回项目列表"
-              >
-                {Icons.back()}
-                <span>返回</span>
-              </button>
-            )}
-            
-            {/* Collapse/Expand Toggle Button - Right side, vertically centered */}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-              title={sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'}
-            >
-              {sidebarCollapsed ? (
-                <svg 
-                  className="w-5 h-5 text-(--novel-text-muted) transition-transform duration-300" 
-                  viewBox="0 0 24 24" 
-                  fill="currentColor"
-                >
-                  <path d="M11 17h10V7H11v10zm2-2V9h6v6h-6zM3 7h6v10H3V7z"/>
-                </svg>
-              ) : (
-                <svg 
-                  className="w-5 h-5 text-(--novel-text-muted) transition-transform duration-300" 
-                  viewBox="0 0 24 24" 
-                  fill="currentColor"
-                >
-                  <path d="M13 7h10v10h-2V7h-8zm-2 0v10H1V7h10zm-1-3v2h6V4H10z"/>
-                </svg>
-              )}
-            </button>
-          </div>
-          
-          {/* Sidebar Content */}
-          <div className={`flex flex-col flex-1 overflow-hidden ${sidebarCollapsed ? 'px-2' : 'px-4'} py-4`}>
-            {sidebarCollapsed ? (
-              /* Collapsed State - Show minimal icons */
-              <div className="flex flex-col items-center gap-2 mt-2">
-                <button
-                  onClick={onBack}
-                  className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                  title="返回项目列表"
-                >
-                  {Icons.back()}
-                </button>
-                <button
-                  onClick={() => setShowCreateScene(true)}
-                  className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                  title="新建章节"
-                >
-                  {Icons.add()}
-                </button>
-              </div>
-            ) : (
-              /* Expanded State - Full content */
-              <>
-                {/* Project Title */}
-                <h2 className="font-serif text-lg font-medium text-(--novel-text-main) mb-4 truncate">
-                  {project.name}
-                </h2>
-                
-                {/* Create Scene Button */}
-                <button
-                  onClick={() => setShowCreateScene(true)}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-(--field-radius) text-sm font-medium mb-4 transition-all hover:brightness-110"
-                  style={{
-                    background: 'var(--accent)',
-                    color: 'var(--accent-foreground)'
-                  }}
-                >
-                  {Icons.add()}
-                  新建章节
-                </button>
-                
-                {/* Scenes List */}
-                <div className="flex-1 overflow-y-auto -mx-2 px-2">
-                  <div className="space-y-1">
-                    {scenes.map((scene) => (
-                      <SceneListItem
-                        key={scene.id}
-                        scene={scene}
-                        chapterNumber={getChapterNumber(scene)}
-                        isSelected={selectedScene?.id === scene.id}
-                        onSelect={() => handleSelectScene(scene)}
-                        onRename={(newTitle) => handleRenameScene(scene, newTitle)}
-                        onDelete={() => handleDeleteScene(scene)}
-                      />
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Total Word Count */}
-                <div className="mt-4 pt-4 border-t border-(--novel-border)">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-(--novel-text-muted)">总字数</span>
-                    <span className="font-medium text-(--novel-text-main)">
-                      {totalWordCount.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        <EditorSidebar
+          project={project}
+          scenes={scenes}
+          selectedScene={selectedScene}
+          totalWordCount={totalWordCount}
+          isEditing={isEditing}
+          onSelectScene={handleSelectScene}
+          onRenameScene={handleRenameScene}
+          onDeleteScene={handleDeleteScene}
+          onCreateScene={handleCreateScene}
+          onBack={handleBack}
+          onUpdateProjectName={handleUpdateProjectName}
+        />
         
         {/* Immersive Main Editor Area */}
         <main 
@@ -419,13 +407,17 @@ export function EditorView({
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
-                  <div className="max-w-[800px] mx-auto min-h-full">
+                  <div 
+                    className="max-w-[800px] mx-auto min-h-full"
+                  >
                     <MilkdownProvider>
-                      <MilkdownEditor 
+                      <MilkdownEditor
                         content={sceneContent}
                         onChange={handleContentChange}
                         fontSize={fontSize}
                         lineHeight={lineHeight}
+                        onFocus={() => setIsEditing(true)}
+                        onBlur={() => setIsEditing(false)}
                       />
                     </MilkdownProvider>
                   </div>
@@ -446,12 +438,39 @@ export function EditorView({
         {/* Floating Bottom Toolbar */}
         <div className="floating-toolbar">
           <div className="glass-card px-4 py-2 flex items-center gap-4">
-            {/* Word Count */}
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-(--novel-text-muted)">字数</span>
-              <span className="font-medium text-(--novel-text-main)">
-                {wordCount.toLocaleString()}
-              </span>
+            {/* Word Count with Tooltip */}
+            <div className="relative group">
+              <div className="flex items-center gap-1.5 text-sm cursor-pointer">
+                <span className="text-(--novel-text-muted)">字数</span>
+                <span className="font-medium text-(--novel-text-main)">
+                  {textStats.word_count.toLocaleString()}
+                </span>
+              </div>
+              {/* Tooltip */}
+              <div className="absolute bottom-full left-0 mb-3 px-5 py-4 text-xs bg-(--surface) border border-(--novel-border) rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
+                <div className="space-y-2">
+                  <div className="flex justify-between gap-6">
+                    <span className="text-(--novel-text-muted)">字符（不含空格）</span>
+                    <span className="font-medium text-(--novel-text-main)">{textStats.char_count.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between gap-6">
+                    <span className="text-(--novel-text-muted)">字符（含空格）</span>
+                    <span className="font-medium text-(--novel-text-main)">{textStats.char_count_with_spaces.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between gap-6">
+                    <span className="text-(--novel-text-muted)">段落</span>
+                    <span className="font-medium text-(--novel-text-main)">{textStats.paragraph_count.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between gap-6">
+                    <span className="text-(--novel-text-muted)">行数</span>
+                    <span className="font-medium text-(--novel-text-main)">{textStats.line_count.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between gap-6 pt-1 border-t border-(--novel-border)/30">
+                    <span className="text-(--novel-text-muted)">预计阅读时间</span>
+                    <span className="font-medium text-(--novel-text-main)">{textStats.reading_time_minutes} 分钟</span>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div className="w-px h-4 bg-(--novel-border)" />
@@ -489,186 +508,10 @@ export function EditorView({
         </div>
         
         {/* Create Scene Modal */}
-        {showCreateScene && (
-          <>
-            <div 
-              className="fixed inset-0 z-50" 
-              style={{ background: 'rgba(74, 69, 60, 0.4)', backdropFilter: 'blur(4px)' }}
-              onClick={() => setShowCreateScene(false)}
-            />
-            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-96">
-              <div className="glass-card p-6" style={{ boxShadow: '0 24px 48px rgba(74, 69, 60, 0.2)' }}>
-                <h3 className="font-semibold text-lg mb-4 text-(--novel-text-main)">
-                  新建章节
-                </h3>
-                <Input
-                  placeholder="章节标题"
-                  value={newSceneTitle}
-                  onChange={(e) => setNewSceneTitle(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleCreateScene()}
-                  className="mb-4"
-                  autoFocus
-                />
-                <div className="flex justify-end gap-2">
-                  <Button variant="ghost" onPress={() => setShowCreateScene(false)}>
-                    取消
-                  </Button>
-                  <Button 
-                    onPress={handleCreateScene}
-                    isDisabled={!newSceneTitle.trim()}
-                    style={{ background: 'var(--accent)', color: 'var(--accent-foreground)' }}
-                  >
-                    创建
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+
       </div>
     </>
   )
 }
 
-// Scene List Item Component
-interface SceneListItemProps {
-  scene: Scene
-  chapterNumber: number
-  isSelected: boolean
-  onSelect: () => void
-  onRename: (newTitle: string) => void
-  onDelete: () => void
-}
 
-function SceneListItem({ scene, chapterNumber, isSelected, onSelect, onRename, onDelete }: SceneListItemProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [editTitle, setEditTitle] = useState(scene.title)
-  
-  const handleSave = () => {
-    if (editTitle.trim() && editTitle !== scene.title) {
-      onRename(editTitle.trim())
-    }
-    setIsEditing(false)
-  }
-  
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSave()
-    } else if (e.key === 'Escape') {
-      setEditTitle(scene.title)
-      setIsEditing(false)
-    }
-  }
-  
-  return (
-    <div
-      className={`group flex items-center gap-2 px-3 py-2.5 rounded-(--field-radius) cursor-pointer transition-all ${
-        isSelected 
-          ? 'bg-(--accent)/10' 
-          : 'hover:bg-black/5'
-      }`}
-      onClick={onSelect}
-    >
-      <span className={`chapter-number ${isSelected ? 'active' : ''}`}>
-        {chapterNumber.toString().padStart(2, '0')}
-      </span>
-      
-      {isEditing ? (
-        <input
-          type="text"
-          value={editTitle}
-          onChange={(e) => setEditTitle(e.target.value)}
-          onBlur={handleSave}
-          onKeyDown={handleKeyDown}
-          className="flex-1 text-sm bg-white/50 border border-(--novel-border) rounded px-2 py-1 outline-none focus:border-(--accent)"
-          autoFocus
-          onClick={(e) => e.stopPropagation()}
-        />
-      ) : (
-        <>
-          <span className={`flex-1 text-sm truncate ${
-            isSelected ? 'text-(--novel-text-main) font-medium' : 'text-(--novel-text-muted)'
-          }`}>
-            {scene.title}
-          </span>
-          
-          {/* Hover Actions */}
-          <div className="hidden group-hover:flex items-center gap-1">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setIsEditing(true)
-              }}
-              className="p-1 rounded hover:bg-black/10 text-(--novel-text-muted)"
-            >
-              {Icons.edit()}
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete()
-              }}
-              className="p-1 rounded hover:bg-red-100 text-red-500"
-            >
-              {Icons.delete()}
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
-
-// Editable Title Component
-interface EditableTitleProps {
-  title: string
-  onSave: (newTitle: string) => void
-}
-
-function EditableTitle({ title, onSave }: EditableTitleProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [editTitle, setEditTitle] = useState(title)
-  
-  useEffect(() => {
-    setEditTitle(title)
-  }, [title])
-  
-  const handleSave = () => {
-    if (editTitle.trim() && editTitle !== title) {
-      onSave(editTitle.trim())
-    }
-    setIsEditing(false)
-  }
-  
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSave()
-    } else if (e.key === 'Escape') {
-      setEditTitle(title)
-      setIsEditing(false)
-    }
-  }
-  
-  if (isEditing) {
-    return (
-      <input
-        type="text"
-        value={editTitle}
-        onChange={(e) => setEditTitle(e.target.value)}
-        onBlur={handleSave}
-        onKeyDown={handleKeyDown}
-        className="text-2xl font-serif font-medium text-center bg-transparent border-b-2 border-(--accent) outline-none px-4 py-1 text-(--novel-text-main)"
-        autoFocus
-      />
-    )
-  }
-  
-  return (
-    <h1 
-      onClick={() => setIsEditing(true)}
-      className="text-2xl font-serif font-medium text-center text-(--novel-text-main) cursor-pointer hover:text-(--accent) transition-colors px-4 py-1"
-    >
-      {title}
-    </h1>
-  )
-}

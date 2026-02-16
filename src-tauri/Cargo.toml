@@ -1,9 +1,9 @@
 [package]
-name = "novel-editor"
-version = "1.0.0"
+name = "aphelios"
+version = "0.1.0"
 description = "A cross-platform local novel project manager and editor"
 authors = ["Novel Editor Team"]
-edition = "2021"
+edition = "2024"
 
 [lib]
 name = "novel_editor_lib"
@@ -26,6 +26,9 @@ uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 zip = "2"
 open = "5"
+
+[dev-dependencies]
+tempfile = "3"
 
 [profile.release]
 panic = "abort"

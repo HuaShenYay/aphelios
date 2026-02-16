@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button, Input } from '@heroui/react'
 import { WindowManager } from '../components/WindowManager'
-import { Icons } from '../components/Icons'
 import { Project } from '../types'
-import { getBookCover } from '../utils/helpers'
 
 interface ProjectEditProps {
   project: Project
@@ -49,16 +47,16 @@ export function ProjectEdit({ project, onSave, onCancel }: ProjectEditProps) {
 
   return (
     <>
-      <WindowManager title="修改项目" />
+      <WindowManager title="修改作品" />
       <div className="flex h-screen bg-[var(--novel-bg-paper)] pt-9">
         <main className="flex-1 flex items-center justify-center p-8">
           <div className="max-w-2xl w-full">
             <div className="text-center mb-8">
               <h1 className="font-serif text-3xl text-[var(--novel-text-main)] mb-2">
-                修改项目
+                修改作品
               </h1>
               <p className="text-[var(--novel-text-muted)]">
-                自定义你的项目信息
+                自定义你的作品信息
               </p>
             </div>
 
@@ -66,17 +64,13 @@ export function ProjectEdit({ project, onSave, onCancel }: ProjectEditProps) {
               {/* Project Name */}
               <div>
                 <label className="block text-sm font-medium text-[var(--novel-text-main)] mb-2">
-                  项目名称
+                  作品名称
                 </label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="输入项目名称"
-                  size="lg"
-                  classNames={{
-                    input: 'text-lg',
-                    inputWrapper: 'bg-white border-black/10'
-                  }}
+                  placeholder="输入作品名称"
+                  className="text-lg bg-white border-black/10"
                 />
               </div>
 
@@ -136,7 +130,7 @@ export function ProjectEdit({ project, onSave, onCancel }: ProjectEditProps) {
                     <div className="w-full h-full flex flex-col items-center justify-center p-4">
                       <div className="w-16 h-20 bg-white/20 rounded-md mb-4 backdrop-blur-sm" />
                       <h3 className="text-white font-serif text-lg text-center font-medium">
-                        {name || '项目名称'}
+                        {name || '作品名称'}
                       </h3>
                     </div>
                   </div>
@@ -146,7 +140,7 @@ export function ProjectEdit({ project, onSave, onCancel }: ProjectEditProps) {
               {/* Actions */}
               <div className="flex justify-end gap-4 pt-4">
                 <Button 
-                  variant="light" 
+                  variant="ghost" 
                   onPress={onCancel}
                   className="px-8"
                 >
